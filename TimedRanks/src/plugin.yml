@@ -1,0 +1,20 @@
+name: TimedRanks
+main: com.github.CubieX.TimedRanks.TimedRanks
+softdepend: [PermissionsEx]
+version: 0.1
+description: Automated, timed rank promotion and demotion
+
+commands:
+    tr:
+      description: Using TimedRanks
+      usage: /tr version | reload
+
+permissions:
+    
+    timedranks.promote:
+        description: Allows promoting a player for the given time to the configured rank.
+        default: op
+
+    timedranks.admin:
+        description: Allows reloading the plugin and all other commands.
+        default: op

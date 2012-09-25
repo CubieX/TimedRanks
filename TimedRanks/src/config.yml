@@ -1,0 +1,15 @@
+#do NOT change the config version!
+config_version: '1'
+#set locale for user dialog messages (currently without function!)
+language: de
+#enable debug output
+debug: false
+#Group definitions are going here
+basegroup1: Member
+promotegroup1: VIP
+#
+basegroup2: Supporter
+promotegroup2: VIPSupporter
+#
+basegroup3: Moderator
+promotegroup3: VIPModerator
