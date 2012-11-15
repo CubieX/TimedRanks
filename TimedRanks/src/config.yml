@@ -1,15 +1,27 @@
 #do NOT change the config version!
 config_version: '1'
-#set locale for user dialog messages (currently without function!)
+#set locale for user dialog messages
 language: de
 #enable debug output
 debug: false
-#Group definitions are going here
-basegroup1: Member
-promotegroup1: VIP
+#Group definitions are going here. Order is mandatory! 1st basegroup is matched with 1st promotegorup. and so on.
+promotegroups:
+  - VIP
+  - VIPSupporter
+  - VIPModerator
+  - VIPDesigner
+basegroups:
+  - Member
+  - Supporter
+  - Moderator
+  - Designer
 #
-basegroup2: Supporter
-promotegroup2: VIPSupporter
+# Message section [GERMAN]
+DE_STATUSMESSAGE_VALID_1: Du hast noch
+DE_STATUSMESSAGE_VALID_2: Tage den VIP-Status.
+DE_STATUSMESSAGE_INVALID: Du hast zur Zeit keinen VIP-Status.
 #
-basegroup3: Moderator
-promotegroup3: VIPModerator
+# Message section [ENGLISH]
+EN_STATUSMESSAGE_VALID_1: You have
+EN_STATUSMESSAGE_VALID_2: days left for your VIP state.
+EN_STATUSMESSAGE_INVALID: You currently do not have VIP status.

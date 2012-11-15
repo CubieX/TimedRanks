@@ -34,24 +34,23 @@ public class TimedRanksCommandHandler implements CommandExecutor
         }
 
         if (cmd.getName().equalsIgnoreCase("tr"))
-        { // If the player typed /plague then do the following... (can be run from console also)
+        { // If the player typed /tr then do the following... (can be run from console also)
             if (args.length == 0)
             { //no arguments, so help will be displayed
                 return false;
             }
             if (args.length==1)
             {
-                if (args[0].equalsIgnoreCase("version")) // argument 0 is given and correct
+                if (args[0].equalsIgnoreCase("version")) // show the current version of the plugin
                 {            
-                    sender.sendMessage(ChatColor.GREEN + "This server is running " + plugin.getDescription().getName() + " " + plugin.getDescription().getVersion());                    
-                    return true;
+                    sender.sendMessage(ChatColor.GREEN + "This server is running " + plugin.getDescription().getName() + " " + plugin.getDescription().getVersion());
                 }    
-                if (args[0].equalsIgnoreCase("reload")) // argument 0 is given and correct
+
+                if (args[0].equalsIgnoreCase("reload")) // reload the plugins config and playerfile
                 {            
                     if(sender.hasPermission("timedranks.admin"))
                     {
                         cHandler.reloadConfig(sender);                        
-                        return true;
                     }
                     else
                     {
@@ -59,49 +58,97 @@ public class TimedRanksCommandHandler implements CommandExecutor
                     }
                 }
 
-            }
-            if (args.length==3)
-            {
-                if (args[0].equalsIgnoreCase("promote")) // argument 0 is given and correct
-                {   //TODO Befehl wie "promote NAME set TIME" und auch "promote NAME add TIME" sollte möglich sein. (Zeit in Tagen erstmal nur)      
-                    if(sender.hasPermission("timedranks.promote")) //TODO schlüssel so machen, das es sich die Perm aus der Config zusammenstellt je nach den dort anegegebenen Gruppen
-                        // TODO evt. mehrere PFade oder Gruppenränge in Config und Permissions definieren um z.B. zu setzen welche Ränge promotebar sind.
-                        // TODO Muster: baseGroup1:Member promoteGroup1:VIP baseGroup2:Moderator promoteGroup2:VIPModerator oder so ähnlich
-                        //TODO und die Permission dann so: timedranks.promote.member timedranks.promote.moderator um aus Membern VIPs und Mods VIPMods zu machen
+                if (args[0].equalsIgnoreCase("status")) // no name given, so show status of player that issued the command
+                {            
+                    if(sender.hasPermission("timedranks.status.own"))
                     {
-                        String playerToPromote = args[1];
-                        String promotionTime = args[2];
-                        
-                        String[] promoteMemberToGroup = {"VIP"}; //TODO das hier anfangs aus der Config lesen!! evt. Hashmap...
-                        
-                        try
-                        {
-                            PermissionUser permPlayer  = PermissionsEx.getUser(playerToPromote);
-                            // TODO Achtung: Wenn der Spieler nicht in der permissions.yml existiert, wird er automatisch angelegt!
-                            // TODO deswegen vorher die Existenz prüfen und dann Fehler ausgeben!!
-                            permPlayer.setGroups(promoteMemberToGroup);
-                            sender.sendMessage(ChatColor.GREEN + "Spieler: " + ChatColor.YELLOW + playerToPromote + ChatColor.GREEN + " wird fuer " + promotionTime + " Tage in den Rang: " + ChatColor.YELLOW + promoteMemberToGroup[0] + ChatColor.GREEN +" gesetzt.");
-                        }
-                        catch (Exception ex)
-                        {
-                            sender.sendMessage(ChatColor.YELLOW + "Fehler beim promoten dieses Spielers!");
-                            log.severe(ex.getMessage());
-                        }
+                        // TODO show own status  
 
-                        return true;
                     }
                     else
                     {
-                        sender.sendMessage(ChatColor.RED + "Du hast keine Berechtigung fuer diese Ernennung.");
+                        sender.sendMessage(ChatColor.RED + "You du not have sufficient permission to see your status!");
                     }
                 }
+                return true;
+            }
+
+            if (args.length==2)
+            {
+                if (args[0].equalsIgnoreCase("status")) // show the status of the given player
+                {            
+                    if(sender.hasPermission("timedranks.status.other"))
+                    {
+                        // TODO show status of given player  
+
+                    }
+                    else
+                    {
+                        sender.sendMessage(ChatColor.RED + "You du not have sufficient permission to see the status of " + plugin.getDescription().getName() + "!");
+                    }
+                }
+
+                if (args[0].equalsIgnoreCase("pause")) // pause the promoted rank immediately until it gets manually resumed
+                {            
+                    if(sender.hasPermission("timedranks.manage"))
+                    {
+                        // TODO                        
+                    }
+                    else
+                    {
+                        sender.sendMessage(ChatColor.RED + "You du not have sufficient permission to manage ranks!");
+                    }
+                }                
+
+                if (args[0].equalsIgnoreCase("resume")) // resume the promoted rank, adding the suspended time to the end timestamp
+                {            
+                    if(sender.hasPermission("timedranks.manage"))
+                    {
+                        // TODO                       
+                    }
+                    else
+                    {
+                        sender.sendMessage(ChatColor.RED + "You du not have sufficient permission to manage ranks!");
+                    }                    
+                }
+            }
+
+            if (args.length==3)
+            {
+                if (args[0].equalsIgnoreCase("sub") || args[0].equalsIgnoreCase("nimm")) // take away days for the promoted rank for the player
+                {                   
+                    if(sender.hasPermission("timedranks.manage"))
+                    {
+                        // TODO                            
+                    }
+                    else
+                    {
+                        sender.sendMessage(ChatColor.RED + "You du not have sufficient permission to manage ranks!");
+                    }                   
+                }
+                return true;
+            }
+
+            if (args.length==4)
+            {
+                if (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("gib")) // promote a player for the given time and rank
+                {            
+                    if(sender.hasPermission("timedranks.manage"))
+                    {
+                        // TODO    
+                    }
+                    else
+                    {
+                        sender.sendMessage(ChatColor.RED + "You du not have sufficient permission to manage ranks!");
+                    }                    
+                }
+                return true;
             }
             else
             {
-                sender.sendMessage(ChatColor.YELLOW + "Falsche Anzahl an Parametern.");
-            }                
-
+                sender.sendMessage(ChatColor.YELLOW + plugin.logPrefix + "Falsche Anzahl an Parametern.");
+            }  
         }         
-        return false; // if false is returned, the help for the command stated in the plugin.yml will be displayed to the player
+        return false; // No valid parameter count. If false is returned, the help for the command stated in the plugin.yml will be displayed to the player
     }
 }
