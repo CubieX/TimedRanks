@@ -1,6 +1,13 @@
 package com.github.CubieX.TimedRanks;
 
+import java.util.List;
 import java.util.logging.Logger;
+
+import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.permission.Permission;
+
+import org.bukkit.configuration.Configuration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -10,12 +17,16 @@ public class TimedRanksEntityListener implements Listener
 {
     private final TimedRanks plugin;
     private final Logger log;
+    private final Economy econ; 
+    private final Permission perm;
     
     //Constructor
-    public TimedRanksEntityListener(TimedRanks plugin, Logger log)
+    public TimedRanksEntityListener(TimedRanks plugin, Logger log, Economy econ, Permission perm)
     {
         this.plugin = plugin;
         this.log = log;
+        this.econ = econ;
+        this.perm = perm;
                
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -51,6 +62,8 @@ They are called in the following order
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true) // event has MONITOR priority and will be skipped if it has been cancelled before
     public void onPlayerJoin(PlayerJoinEvent event)
     {
-     
+       
     }
+    
+    
 }
