@@ -13,104 +13,104 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 public class TimedRanksConfigHandler
 {
-    private final TimedRanks plugin;
-    private final Logger log;
-    
-    private FileConfiguration config;
-    private FileConfiguration promoPlayersCfg = null;
-    private File promotedPlayersConfigFile = null;
-    private final String promotedPlayersFileName = "promotedPlayers.yml";
+   private final TimedRanks plugin;
+   private final Logger log;
 
-    //Constructor
-    public TimedRanksConfigHandler(TimedRanks plugin, Logger log)
-    {        
-        this.plugin = plugin;
-        this.log = log;
+   private FileConfiguration config;
+   private FileConfiguration promoPlayersCfg = null;
+   private File promotedPlayersConfigFile = null;
+   private final String promotedPlayersFileName = "promotedPlayers.yml";
 
-        initConfig();        
-    }
+   //Constructor
+   public TimedRanksConfigHandler(TimedRanks plugin, Logger log)
+   {        
+      this.plugin = plugin;
+      this.log = log;
 
-    private void initConfig()
-    {
-        plugin.saveDefaultConfig(); //creates a copy of the provided config.yml in the plugins data folder, if it does not exist
-        config = plugin.getConfig(); //re-reads config out of memory. (Reads the config from file only, when invoked the first time!)
+      initConfig();        
+   }
 
-        reloadPromotedPlayersConfig(); // load file from disk and create objects      
-        savePromotedPlayersDefaultConfig(); // creates a copy of the provided promotedPlayers.yml
-        promoPlayersCfg = getPromotedPlayersConfig(); // re-reads custom config from disk
-    }
+   private void initConfig()
+   {
+      plugin.saveDefaultConfig(); //creates a copy of the provided config.yml in the plugins data folder, if it does not exist
+      config = plugin.getConfig(); //re-reads config out of memory. (Reads the config from file only, when invoked the first time!)
 
-    private void saveConfig() //saves the config to disc (needed when entries have been altered via the plugin in-game)
-    {
-        // get and set values here!
-        plugin.saveConfig();   
-    }
+      reloadPromotedPlayersConfig(); // load file from disk and create objects      
+      savePromotedPlayersDefaultConfig(); // creates a copy of the provided promotedPlayers.yml
+      promoPlayersCfg = getPromotedPlayersConfig(); // re-reads custom config from disk
+   }
 
-    //reloads the config from disc (used if user made manual changes to the config.yml file)
-    public void reloadConfig(CommandSender sender)
-    {
-        plugin.reloadConfig();
-        config = plugin.getConfig(); // new assignment neccessary when returned value is assigned to a variable or static field(!)
+   private void saveConfig() //saves the config to disc (needed when entries have been altered via the plugin in-game)
+   {
+      // get and set values here!
+      plugin.saveConfig();   
+   }
 
-        sender.sendMessage("[" + ChatColor.GREEN + "Info" + ChatColor.WHITE + "] " + ChatColor.GREEN + plugin.getDescription().getName() + " " + plugin.getDescription().getVersion() + " reloaded!");       
-    }
+   //reloads the config from disc (used if user made manual changes to the config.yml file)
+   public void reloadConfig(CommandSender sender)
+   {
+      plugin.reloadConfig();
+      config = plugin.getConfig(); // new assignment neccessary when returned value is assigned to a variable or static field(!)
 
-    // =====================================
-    // promotedPlayers config handling
-    // =====================================
+      sender.sendMessage("[" + ChatColor.GREEN + "Info" + ChatColor.WHITE + "] " + ChatColor.GREEN + plugin.getDescription().getName() + " " + plugin.getDescription().getVersion() + " reloaded!");       
+   }
 
-    // reload from disk
-    public void reloadPromotedPlayersConfig()
-    {
-        if (promotedPlayersConfigFile == null)
-        {
-            promotedPlayersConfigFile = new File(plugin.getDataFolder(), promotedPlayersFileName);
-        }
-        promoPlayersCfg = YamlConfiguration.loadConfiguration(promotedPlayersConfigFile);
+   // =====================================
+   // promotedPlayers config handling
+   // =====================================
 
-        // Look for defaults in the jar
-        InputStream defConfigStream = plugin.getResource(promotedPlayersFileName);
-        if (defConfigStream != null)
-        {
-            YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
-            promoPlayersCfg.setDefaults(defConfig);
-        }
-    }
+   // reload from disk
+   public void reloadPromotedPlayersConfig()
+   {
+      if (promotedPlayersConfigFile == null)
+      {
+         promotedPlayersConfigFile = new File(plugin.getDataFolder(), promotedPlayersFileName);
+      }
+      promoPlayersCfg = YamlConfiguration.loadConfiguration(promotedPlayersConfigFile);
 
-    // reload config and return it
-    public FileConfiguration getPromotedPlayersConfig()
-    {
-        if (promoPlayersCfg == null)
-        {
-            this.reloadPromotedPlayersConfig();
-        }
-        return promoPlayersCfg;
-    }
+      // Look for defaults in the jar
+      InputStream defConfigStream = plugin.getResource(promotedPlayersFileName);
+      if (defConfigStream != null)
+      {
+         YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
+         promoPlayersCfg.setDefaults(defConfig);
+      }
+   }
 
-    //save config
-    public void savePromotedPlayersConfig()
-    {
-        if (promoPlayersCfg == null || promotedPlayersConfigFile == null)
-        {
-            return;
-        }
-        try 
-        {
-            getPromotedPlayersConfig().save(promotedPlayersConfigFile);
-        }
-        catch (IOException ex)
-        {
-            log.log(Level.SEVERE, "Could not save config to " + promotedPlayersConfigFile, ex);
-        }
-    }
+   // reload config and return it
+   public FileConfiguration getPromotedPlayersConfig()
+   {
+      if (promoPlayersCfg == null)
+      {
+         this.reloadPromotedPlayersConfig();
+      }
+      return promoPlayersCfg;
+   }
 
-    // safe a default config if there is no file present
-    public void savePromotedPlayersDefaultConfig()
-    {
-        if (!promotedPlayersConfigFile.exists())
-        {            
-           this.plugin.saveResource(promotedPlayersFileName, false);
-        }
-    }
+   //save config
+   public void savePromotedPlayersConfig()
+   {
+      if (promoPlayersCfg == null || promotedPlayersConfigFile == null)
+      {
+         return;
+      }
+      try 
+      {
+         getPromotedPlayersConfig().save(promotedPlayersConfigFile);
+      }
+      catch (IOException ex)
+      {
+         log.log(Level.SEVERE, "Could not save config to " + promotedPlayersConfigFile, ex);
+      }
+   }
+
+   // safe a default config if there is no file present
+   public void savePromotedPlayersDefaultConfig()
+   {
+      if (!promotedPlayersConfigFile.exists())
+      {            
+         this.plugin.saveResource(promotedPlayersFileName, false);
+      }
+   }
 
 }
