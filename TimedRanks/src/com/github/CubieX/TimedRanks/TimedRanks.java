@@ -43,6 +43,12 @@ public class TimedRanks extends JavaPlugin
    @Override
    public void onEnable()
    {     
+      // TODO Zeitgesteuerte Zahlung an VIPs o.ä. Muss aber in Scheduler gecheckt werden, denn manchmal läuft ein VIP ja, ohne online zu sein.
+      // Ob er dann trotzdem das geld bekommt, soll konfiguriert werden können!
+      // Das Zahlungs-Intervall soll pro Gruppe konfigurierbar sein.
+      // promotedPlayers liste entsprechend umbauen, das für jeden Spieler der Ende-Zeitsptempel der Promotion und der Zeitstempel der nächsten Zahlung
+      // eingetragen wird.
+      
       this.plugin = this; 
 
       cHandler = new TimedRanksConfigHandler(this);
