@@ -71,17 +71,24 @@ public class TimedRanksCommandHandler implements CommandExecutor
                   {
                      if(plugin.playerIsOnPromotionList(sender.getName()))
                      {
-                        String promoteGroup = plugin.getPromoteGroup(sender.getName());
-                        sender.sendMessage("Deine Ernennung zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet in " + ChatColor.GREEN + plugin.getPromotionEndTime(sender.getName()) + ChatColor.WHITE + " Tagen.");
+                        if(plugin.promotionIsActive(sender.getName()))
+                        {
+                           String promoteGroup = plugin.getPromoteGroup(sender.getName());
+                           sender.sendMessage(ChatColor.WHITE + "Deine Ernennung zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet in " + ChatColor.GREEN + plugin.getPromotionEndTime(sender.getName()) + ChatColor.WHITE + " Tagen.");
+                        }
+                        else
+                        {
+                           sender.sendMessage(ChatColor.WHITE + "Deine Ernennung ist zur Zeit pausiert.");
+                        }
                      }
                      else
                      {
-                        sender.sendMessage("Du bist momentan nicht in einen hoeheren Rang ernannt.");
+                        sender.sendMessage(ChatColor.WHITE + "Du bist momentan nicht in einen hoeheren Rang ernannt.");
                      }
                   }
                   else
                   {
-                     TimedRanks.log.info(TimedRanks.logPrefix + "This command can only be used by a player.");
+                     sender.sendMessage(TimedRanks.logPrefix + "This command can only be used by a player.");
                   }                  
                }
                else
@@ -113,15 +120,39 @@ public class TimedRanksCommandHandler implements CommandExecutor
                   {
                      if(plugin.playerIsOnPromotionList(playerNameToShowStatus))
                      {
-                        String promoteGroup = plugin.getPromoteGroup(playerNameToShowStatus);
+                        if(plugin.promotionIsActive(playerNameToShowStatus))
+                        {
+                           String promoteGroup = plugin.getPromoteGroup(playerNameToShowStatus);
 
-                        if(sender instanceof Player)
-                        {                           
-                           sender.sendMessage("Die Ernennung von " + playerNameToShowStatus + " zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet in " + ChatColor.GREEN + plugin.getPromotionEndTime(playerNameToShowStatus) + ChatColor.WHITE + " Tagen.");
+                           if(sender instanceof Player)
+                           {                           
+                              sender.sendMessage(ChatColor.WHITE + "Die Ernennung von " + playerNameToShowStatus + " zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet in " + ChatColor.GREEN + plugin.getPromotionEndTime(playerNameToShowStatus) + ChatColor.WHITE + " Tagen.");
+
+                              if(plugin.playerIsInPayedGroup(playerNameToShowStatus))
+                              {
+                                 sender.sendMessage(ChatColor.WHITE + "Naechste Auszahlung in " + ChatColor.GREEN + plugin.getNextPaymentTime(playerNameToShowStatus) + ChatColor.WHITE + " Tagen.");
+                              }
+                           }
+                           else
+                           {
+                              sender.sendMessage("Promotion of " + playerNameToShowStatus + " as " + promoteGroup + " ends in " + plugin.getPromotionEndTime(playerNameToShowStatus) + " days.");
+
+                              if(plugin.playerIsInPayedGroup(playerNameToShowStatus))
+                              {
+                                 sender.sendMessage("Next payment in " + plugin.getNextPaymentTime(playerNameToShowStatus) + " days.");
+                              }
+                           }
                         }
                         else
-                        {                           
-                           sender.sendMessage("Promotion of " + playerNameToShowStatus + " as " + promoteGroup + " ends in " + plugin.getPromotionEndTime(playerNameToShowStatus) + " days.");
+                        {
+                           if(sender instanceof Player)
+                           {
+                              sender.sendMessage(TimedRanks.logPrefix + "Die Ernennung dieses Spielers ist zur Zeit pausiert.");
+                           }
+                           else
+                           {
+                              sender.sendMessage(TimedRanks.logPrefix + "This players promotion is currently paused.");
+                           }
                         }
                      }
                      else
@@ -132,7 +163,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                         }
                         else
                         {
-                           TimedRanks.log.info(TimedRanks.logPrefix + "This Player is currently not promoted in a higher rank by " + plugin.getDescription().getName() + ".");
+                           sender.sendMessage(TimedRanks.logPrefix + "This Player is currently not promoted in a higher rank by " + plugin.getDescription().getName() + ".");
                         }
                      }
                   }
@@ -167,9 +198,61 @@ public class TimedRanksCommandHandler implements CommandExecutor
                         (offlinePlayer.hasPlayedBefore())) // checks if this player is a valid one
                   {
                      playersNameToPause = offlinePlayer.getName();                                
-                  }  
+                  }
 
-                  // TODO
+                  if(null != playersNameToPause)
+                  {
+                     if(plugin.playerIsOnPromotionList(playersNameToPause))
+                     {
+                        if(plugin.promotionIsActive(playersNameToPause))
+                        {
+                           if(plugin.pausePromotion(playersNameToPause))
+                           {
+                              if(sender instanceof Player)
+                              {
+                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Die Ernennung dieses Spielers wurde pausiert.");
+                              }
+                              else
+                              {
+                                 sender.sendMessage(TimedRanks.logPrefix + "Promotion of this players has been paused.");
+                              }
+                           }
+                           else
+                           {
+                              if(sender instanceof Player)
+                              {
+                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.RED + "Fehler beim pausieren der Ernennung!");
+                              }
+                              else
+                              {
+                                 TimedRanks.log.severe(TimedRanks.logPrefix + "Error on pausing " + playersNameToPause + "'s promotion!");
+                              }
+                           }
+                        }
+                        else
+                        {
+                           if(sender instanceof Player)
+                           {
+                              sender.sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Die Ernennung dieses Spielers ist bereits pausiert.");
+                           }
+                           else
+                           {
+                              sender.sendMessage(TimedRanks.logPrefix + "Promotion of this player has already been paused.");
+                           }
+                        }                        
+                     }
+                     else
+                     {
+                        if(sender instanceof Player)
+                        {
+                           sender.sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Dieser Spieler ist momentan nicht ueber " + plugin.getDescription().getName() + " in einen hoeheren Rang ernannt.");
+                        }
+                        else
+                        {
+                           sender.sendMessage(TimedRanks.logPrefix + "This Player is currently not promoted in a higher rank by " + plugin.getDescription().getName() + ".");
+                        }
+                     }
+                  }
                }
                else
                {
@@ -179,7 +262,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             }                
 
             // RESUME PROMOTION OF A PLAYER
-            if (args[0].equalsIgnoreCase("resume")) // resume the promoted rank, adding the suspended time to the end timestamp
+            if (args[0].equalsIgnoreCase("resume")) // resume the promoted rank, adding the suspended time to the end timestamp and next payment time
             {            
                if(sender.hasPermission("timedranks.manage"))
                {
@@ -192,7 +275,59 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      playersNameToResume = offlinePlayer.getName();                               
                   }
 
-                  // TODO 
+                  if(null != playersNameToResume)
+                  {
+                     if(plugin.playerIsOnPromotionList(playersNameToResume))
+                     {
+                        if(!plugin.promotionIsActive(playersNameToResume))
+                        {
+                           if(plugin.resumePromotion(playersNameToResume))
+                           {
+                              if(sender instanceof Player)
+                              {
+                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Die Ernennung dieses Spielers wurde wieder aktiviert.");
+                              }
+                              else
+                              {
+                                 sender.sendMessage(TimedRanks.logPrefix + "Promotion of this players has been reactivated.");
+                              }
+                           }
+                           else
+                           {
+                              if(sender instanceof Player)
+                              {
+                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.RED + "Fehler beim reaktivieren der Ernennung!");
+                              }
+                              else
+                              {
+                                 TimedRanks.log.severe(TimedRanks.logPrefix + "Error on reactivating " + playersNameToResume + "'s promotion!");
+                              }
+                           }
+                        }
+                        else
+                        {
+                           if(sender instanceof Player)
+                           {
+                              sender.sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Die Ernennung dieses Spielers ist schon aktiv.");
+                           }
+                           else
+                           {
+                              sender.sendMessage(TimedRanks.logPrefix + "Promotion of this players is already active.");
+                           }
+                        }                        
+                     }
+                     else
+                     {
+                        if(sender instanceof Player)
+                        {
+                           sender.sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Dieser Spieler ist momentan nicht ueber " + plugin.getDescription().getName() + " in einen hoeheren Rang ernannt.");
+                        }
+                        else
+                        {
+                           sender.sendMessage(TimedRanks.logPrefix + "This Player is currently not promoted in a higher rank by " + plugin.getDescription().getName() + ".");
+                        }
+                     }
+                  }
 
                }
                else
@@ -245,7 +380,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                                  if(plugin.getServer().getPlayer(playersNameToDemote).isOnline())
                                  {
                                     // TODO hier die Messages aus der Config einfügen!  Auch bei den Fehlermeldungen!                      
-                                    plugin.getServer().getPlayer(playersNameToDemote).sendMessage(TimedRanks.logPrefix + "Du wurdest vom " + ChatColor.RED + promoteGroup + ChatColor.WHITE + " zum " + ChatColor.GREEN + baseGroup + ChatColor.WHITE + " zurueckgestuft.");
+                                    plugin.getServer().getPlayer(playersNameToDemote).sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Du wurdest vom " + ChatColor.RED + promoteGroup + ChatColor.WHITE + " zum " + ChatColor.GREEN + baseGroup + ChatColor.WHITE + " zurueckgestuft.");
                                  }
                               }
                               catch (Exception ex)
@@ -285,7 +420,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                         }
                         else
                         {
-                           TimedRanks.log.info(TimedRanks.logPrefix + "This Player is currently not promoted in a higher rank by " + plugin.getDescription().getName() + ".");
+                           sender.sendMessage(TimedRanks.logPrefix + "This Player is currently not promoted in a higher rank by " + plugin.getDescription().getName() + ".");
                         }
                      }
                   }
@@ -297,7 +432,103 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      }
                      else
                      {
-                        TimedRanks.log.info(TimedRanks.logPrefix + "Player not found. Please check the name!");
+                        sender.sendMessage(TimedRanks.logPrefix + "Player not found. Please check the name!");
+                     }
+                  }                  
+               }
+               else
+               {
+                  sender.sendMessage(ChatColor.RED + "Du hast keine Berechtigung um Raenge zu managen!");
+               }
+
+               return true;
+            }
+
+            // PAY PLAYER BEFORE DUE DATE (this will postpone the next payment accordingly by one payment interval!)
+            if (args[0].equalsIgnoreCase("pay"))
+            {                 
+               if(sender.hasPermission("timedranks.admin"))
+               {
+                  OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(args[1]); // Caution. This always returns a valid object!
+                  String playersNameToPay = null;
+
+                  if((null != offlinePlayer) &&
+                        (offlinePlayer.hasPlayedBefore())) // checks if this player is a valid one
+                  {
+                     playersNameToPay = offlinePlayer.getName();   
+                  }
+
+                  if(null != playersNameToPay)
+                  {
+                     if(plugin.playerIsInPayedGroup(playersNameToPay))
+                     {                        
+                        String promoteGroup = plugin.getPromoteGroup(playersNameToPay);
+
+                        if(null != promoteGroup)
+                        {
+                           if(plugin.payPlayer(playersNameToPay))
+                           {
+                              if(plugin.scheduleNextPayment(playersNameToPay, plugin.getPromoteGroup(playersNameToPay)))
+                              {
+                                 // everything went OK. Error handling is inside the called methods.
+                                 if(sender instanceof Player)
+                                 {
+                                    sender.sendMessage(TimedRanks.logPrefix + ChatColor.GREEN + "Spieler wurde ausgezahlt. Die naechste Zahlung wurde entsprechend verschoben.");
+                                 }
+                                 else
+                                 {
+                                    TimedRanks.log.info(TimedRanks.logPrefix + "Player has been payed. Next pay time has been postponed acordingly.");
+                                 }
+                                 
+                                 try
+                                 {
+                                    if(plugin.getServer().getPlayer(playersNameToPay).isOnline())
+                                    {
+                                       // TODO hier die Messages aus der Config einfügen!  Auch bei den Fehlermeldungen!                      
+                                       plugin.getServer().getPlayer(playersNameToPay).sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Du hast diese Ueberweisung vorzeitig erhalten.");
+                                       plugin.getServer().getPlayer(playersNameToPay).sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Die naechste wird entsprechend verschoben.");
+                                    }
+                                 }
+                                 catch (Exception ex)
+                                 {
+                                    // player is not online
+                                 }
+                              }
+                           }
+                        }
+                        else
+                        {
+                           if(sender instanceof Player)
+                           {
+                              sender.sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Fehler in der Config-File! Gruppenzuordnung nicht erkannt.");
+                           }
+                           else
+                           {
+                              TimedRanks.log.severe(TimedRanks.logPrefix + "Error in cofnig file. Group matching not recognizable.");
+                           }                        
+                        }
+                     }
+                     else
+                     {
+                        if(sender instanceof Player)
+                        {
+                           sender.sendMessage(TimedRanks.logPrefix + "Dieser Spieler ist momentan nicht ueber " + plugin.getDescription().getName() + " in einen hoeheren Rang ernannt.");
+                        }
+                        else
+                        {
+                           sender.sendMessage(TimedRanks.logPrefix + "This Player is currently not promoted in a higher rank by " + plugin.getDescription().getName() + ".");
+                        }
+                     }
+                  }
+                  else
+                  {
+                     if(sender instanceof Player)
+                     {
+                        sender.sendMessage(TimedRanks.logPrefix + "Spieler wurde nicht gefunden. Bitte Name pruefen!");
+                     }
+                     else
+                     {
+                        sender.sendMessage(TimedRanks.logPrefix + "Player not found. Please check the name!");
                      }
                   }                  
                }
@@ -336,7 +567,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                   if(null != playersNameToPromote)
                   {
                      if(plugin.playerIsPromotable(playersNameToPromote))
-                     {   
+                     {
                         String baseGroup = plugin.getBaseGroup(playersNameToPromote);
                         String promoteGroup = plugin.getPromoteGroup(playersNameToPromote);
 
@@ -346,13 +577,15 @@ public class TimedRanksCommandHandler implements CommandExecutor
                            // perform promotion of player
                            World nullWorld = null;
 
-                           if(daysToPromote > 0) // will be 0 if parsing failed or sender used invalid value
+                           if((daysToPromote > 0) && // will be 0 if parsing failed or sender used invalid value
+                                 ((daysToPromote < 10000))) // prevent unrealistic values
                            {
                               if((perm.playerAddGroup(nullWorld, playersNameToPromote, promoteGroup)) && // add player to promoteGroup                     
                                     (perm.playerRemoveGroup(nullWorld, playersNameToPromote, baseGroup))) //remove player from current baseGroup
                               {
-                                 plugin.addPlayerToPromotionList(playersNameToPromote, daysToPromote);
-
+                                 plugin.addPlayerToPromotionList(playersNameToPromote, daysToPromote, promoteGroup);
+                                 // TODO Pay a player immediately for the first time after promotion? -> Could be dangerous when players are promoted in short succession...
+                                 // They will every time get payed. Currently, this will not be implemented!
                                  TimedRanks.log.info(TimedRanks.logPrefix + playersNameToPromote + " was promoted to rank: " + promoteGroup + " from " + sender.getName() + " for " + daysToPromote + " days.");
 
                                  if(sender instanceof Player)
@@ -412,14 +645,14 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      else
                      {
                         World nWorld = null;
-                        
+
                         if(sender instanceof Player)
                         {
                            sender.sendMessage(TimedRanks.logPrefix + "Dieser Spieler ist " + ChatColor.YELLOW + perm.getPrimaryGroup(nWorld, playersNameToPromote) + ChatColor.WHITE + " und kann nicht weiter mit " + plugin.getDescription().getName() + " befoerdert werden.");
                         }
                         else
                         {
-                           TimedRanks.log.info(TimedRanks.logPrefix + "This player is " + perm.getPrimaryGroup(nWorld, playersNameToPromote) + " and cannot be promoted further by " + plugin.getDescription().getName() + ".");
+                           sender.sendMessage(TimedRanks.logPrefix + "This player is " + perm.getPrimaryGroup(nWorld, playersNameToPromote) + " and cannot be promoted further by " + plugin.getDescription().getName() + ".");
                         }
                      }
                   }
@@ -431,7 +664,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      }
                      else
                      {
-                        TimedRanks.log.info(TimedRanks.logPrefix + "Player not found. Please check the name!");
+                        sender.sendMessage(TimedRanks.logPrefix + "Player not found. Please check the name!");
                      }
                   }
                }
@@ -448,7 +681,87 @@ public class TimedRanksCommandHandler implements CommandExecutor
             {            
                if(sender.hasPermission("timedranks.manage"))
                {
-                  // TODO    
+                  OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(args[1]); // Caution. This always returns a valid object!
+                  String playersNameToAddTime = null;
+
+                  if((null != offlinePlayer) &&
+                        (offlinePlayer.hasPlayedBefore())) // checks if this player is a valid one
+                  {
+                     playersNameToAddTime = offlinePlayer.getName();   
+                  }
+
+                  if(null != playersNameToAddTime)
+                  {
+                     int daysToAdd = 0;                  
+
+                     if(TimedRanksUtils.tryParseInt(args[2]))
+                     {
+                        daysToAdd = Integer.parseInt(args[2]);
+                     }
+
+                     if(plugin.playerIsOnPromotionList(playersNameToAddTime))
+                     {                     
+                        if(0 < daysToAdd)
+                        {
+                           if(plugin.addPromotionTime(playersNameToAddTime, daysToAdd))
+                           {
+                              if(sender instanceof Player)
+                              {
+                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.GREEN + playersNameToAddTime + ChatColor.WHITE + " wurden " + ChatColor.GREEN + daysToAdd + ChatColor.WHITE + " Tage hinzugefuegt.");
+                              }
+                              else
+                              {
+                                 TimedRanks.log.info(TimedRanks.logPrefix + daysToAdd + " days have been added to " + playersNameToAddTime + "'s promotion.");
+                              }
+                           }
+                           else
+                           {
+                              if(sender instanceof Player)
+                              {
+                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Zeit konnte nicht hinzugefuegt werden. Format: /tr add|gib <SPIELER> <TAGE>");
+                              }
+                              else
+                              {
+                                 TimedRanks.log.info(TimedRanks.logPrefix + "Time could not be added. Format: /tr add <PLAYER> <DAYS>");
+                              }
+                           }
+                        }
+                        else
+                        {
+                           if(sender instanceof Player)
+                           {
+                              sender.sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Bitte positiven Wert fuer die Tage angeben! Format: /tr sub|nimm <SPIELER> <TAGE>");
+                           }
+                           else
+                           {
+                              TimedRanks.log.info(TimedRanks.logPrefix + "Please use a positive value for the days! Format: /tr sub <PLAYER> <DAYS>");
+                           }
+                        }
+                     }
+                     else
+                     {
+                        if(sender instanceof Player)
+                        {
+                           sender.sendMessage(TimedRanks.logPrefix + "Dieser Spieler ist momentan nicht ueber " + plugin.getDescription().getName() + " in einen hoeheren Rang ernannt.");
+                        }
+                        else
+                        {
+                           sender.sendMessage(TimedRanks.logPrefix + "This Player is currently not promoted in a higher rank by " + plugin.getDescription().getName() + ".");
+                        }
+                     }
+                  }
+                  else
+                  {
+                     if(sender instanceof Player)
+                     {
+                        sender.sendMessage(TimedRanks.logPrefix + "Spieler wurde nicht gefunden. Bitte Name pruefen!");
+                     }
+                     else
+                     {
+                        sender.sendMessage(TimedRanks.logPrefix + "Player not found. Please check the name!");
+                     }
+                  }
+
                }
                else
                {
@@ -462,7 +775,87 @@ public class TimedRanksCommandHandler implements CommandExecutor
             {                   
                if(sender.hasPermission("timedranks.manage"))
                {
-                  // TODO                            
+                  OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(args[1]); // Caution. This always returns a valid object!
+                  String playersNameToSubtractTime = null;
+
+                  if((null != offlinePlayer) &&
+                        (offlinePlayer.hasPlayedBefore())) // checks if this player is a valid one
+                  {
+                     playersNameToSubtractTime = offlinePlayer.getName();   
+                  }
+
+                  if(null != playersNameToSubtractTime)
+                  {
+                     int daysToSubtract = 0;
+
+                     if(TimedRanksUtils.tryParseInt(args[2]))
+                     {
+                        daysToSubtract = Integer.parseInt(args[2]);
+                     }
+
+                     if(plugin.playerIsOnPromotionList(playersNameToSubtractTime))
+                     {
+                        if(0 < daysToSubtract)
+                        {
+                           if(plugin.substractPromotionTime(playersNameToSubtractTime, daysToSubtract))
+                           {
+                              if(sender instanceof Player)
+                              {
+                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.GREEN + playersNameToSubtractTime + ChatColor.WHITE + " wurden " + ChatColor.GREEN + daysToSubtract + ChatColor.WHITE + " Tage abgezogen.");
+                              }
+                              else
+                              {
+                                 TimedRanks.log.info(TimedRanks.logPrefix + daysToSubtract + " days have been subtracted from " + playersNameToSubtractTime + "'s promotion.");
+                              }
+                           }
+                           else
+                           {
+                              if(sender instanceof Player)
+                              {
+                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Zeit konnte nicht abgezogen werden. Format: /tr add|gib <SPIELER> <TAGE>.");
+                              }
+                              else
+                              {
+                                 TimedRanks.log.info(TimedRanks.logPrefix + "Time could not be subtracted. Format: /tr add <SPIELER> <TAGE>.");
+                              }
+                           }
+                        }
+                        else
+                        {
+                           if(sender instanceof Player)
+                           {
+                              sender.sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Bitte positiven Wert fuer die Tage angeben! Format: /tr sub|nimm <SPIELER> <TAGE>");
+                           }
+                           else
+                           {
+                              TimedRanks.log.info(TimedRanks.logPrefix + "Please use a positive value for the days! Format: /tr sub <PLAYER> <DAYS>");
+                           }                           
+                        }
+                     }
+                     else
+                     {
+                        if(sender instanceof Player)
+                        {
+                           sender.sendMessage(TimedRanks.logPrefix + "Dieser Spieler ist momentan nicht ueber " + plugin.getDescription().getName() + " in einen hoeheren Rang ernannt.");
+                        }
+                        else
+                        {
+                           sender.sendMessage(TimedRanks.logPrefix + "This Player is currently not promoted in a higher rank by " + plugin.getDescription().getName() + ".");
+                        }
+                     }
+                  }
+                  else
+                  {
+                     if(sender instanceof Player)
+                     {
+                        sender.sendMessage(TimedRanks.logPrefix + "Spieler wurde nicht gefunden. Bitte Name pruefen!");
+                     }
+                     else
+                     {
+                        sender.sendMessage(TimedRanks.logPrefix + "Player not found. Please check the name!");
+                     }
+                  }
+
                }
                else
                {

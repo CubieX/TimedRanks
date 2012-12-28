@@ -6,4 +6,7 @@
 #do NOT change the file version!
 config_version: '1'
 players:
-  defaultplayer: 1356723668788
+  defaultplayer:
+    endTime: 1356723668788
+    nextPayment: 1356723500000
+    status: active

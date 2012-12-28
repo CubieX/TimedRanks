@@ -18,6 +18,16 @@ promotegroups:
   - VIPSupporter
   - VIPModerator
   - VIPDesigner
+# members of the following groups will receive regular payments
+payedgroups:
+  VIP:
+    interval: 30
+    amount: 1000.00
+  VIPModerator:
+    interval: 30
+    amount: 1000.00
+# Which currency do you use on your server? (e.g. '$' or '§' or 'Coins')
+currencysymbol: '$'
 #
 # Message section [GERMAN]
 DE_STATUSMESSAGE_VALID: Du hast noch {0} Tage als {1} uebrig.

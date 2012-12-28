@@ -1,5 +1,6 @@
 package com.github.CubieX.TimedRanks;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -63,14 +64,19 @@ They are called in the following order
    public void onPlayerJoin(PlayerJoinEvent event)
    {
       final Player joinedPlayer = event.getPlayer();
-      
+
       try
       {
          Bukkit.getScheduler().runTaskLater(plugin, new Runnable()
          {
             public void run()
-            {
+            { // TODO Statt beim Login das ganze Zyklisch abprüfen alle paar Stunden? Damit die Liste immer aktuell ist?
+               // checks if player is currently promoted via TR and if his promotion time has expired. If yes, he will be demoted.
+               // this should always be called BEFORE calling checkPlayerPaymentStatus().
                checkPlayerPromotionStatus(joinedPlayer.getName());
+               // checks if the player is in a payed group and if his next payment is due. If yes, he will be payed and the
+               // next payment time will be scheduled.
+               checkPlayerPaymentStatus(joinedPlayer.getName());
             }
          }, 20*5L); // 5 second delay to give BukkitPermissions time to register joined players permissions         
       }
@@ -80,43 +86,49 @@ They are called in the following order
       }
    }
 
-   void checkPlayerPromotionStatus(String playerName)
+   //=======================================================================================================
+   // 
+
+   public void checkPlayerPromotionStatus(String playerName)
    {
       if(null != playerName)
       {
          if(plugin.playerIsDemotable(playerName))
          {
-            // Perform time check
-            if(plugin.promotionTimeIsUp(playerName))
+            if(plugin.promotionIsActive(playerName))
             {
-               // time is up. So demote player.
-               World nullWorld = null;
-               String baseGroup = plugin.getBaseGroup(playerName);
-               String promoteGroup = plugin.getPromoteGroup(playerName);
-
-               if((null != baseGroup) &&
-                     (null != promoteGroup)) // given player is valid and demotable and his groups are found
+               // Perform time check
+               if(plugin.promotionTimeIsUp(playerName))
                {
-                  if((perm.playerAddGroup(nullWorld, playerName, baseGroup)) && // add player to baseGroup
-                        (perm.playerRemoveGroup(nullWorld, playerName, promoteGroup))) //remove player from current promoteGroup
-                  {
-                     plugin.deletePlayerFromPromotionList(playerName);
-                     TimedRanks.log.info(TimedRanks.logPrefix + playerName + "'s promotion period has expired. Player was demoted to rank: " + baseGroup + ".");
+                  // time is up. So demote player.
+                  World nullWorld = null;
+                  String baseGroup = plugin.getBaseGroup(playerName);
+                  String promoteGroup = plugin.getPromoteGroup(playerName);
 
-                     if(plugin.getServer().getPlayer(playerName).isOnline())
+                  if((null != baseGroup) &&
+                        (null != promoteGroup)) // given player is valid and demotable and his groups are found
+                  {
+                     if((perm.playerAddGroup(nullWorld, playerName, baseGroup)) && // add player to baseGroup
+                           (perm.playerRemoveGroup(nullWorld, playerName, promoteGroup))) //remove player from current promoteGroup
                      {
-                        // TODO hier die Messages aus der Config einfügen!  Auch bei den Fehlermeldungen!                      
-                        plugin.getServer().getPlayer(playerName).sendMessage(TimedRanks.logPrefix + "Du wurdest vom " + ChatColor.RED + promoteGroup + ChatColor.GRAY + " zum " + ChatColor.GREEN + baseGroup + ChatColor.GRAY + " zurueckgestuft.");
+                        plugin.deletePlayerFromPromotionList(playerName);
+                        TimedRanks.log.info(TimedRanks.logPrefix + playerName + "'s promotion period has expired. Player was demoted to rank: " + baseGroup + ".");
+
+                        if(plugin.getServer().getPlayer(playerName).isOnline())
+                        {
+                           // TODO hier die Messages aus der Config einfügen!  Auch bei den Fehlermeldungen!                      
+                           plugin.getServer().getPlayer(playerName).sendMessage(TimedRanks.logPrefix + "Du wurdest vom " + ChatColor.RED + promoteGroup + ChatColor.GRAY + " zum " + ChatColor.GREEN + baseGroup + ChatColor.GRAY + " zurueckgestuft.");
+                        }
+                     }
+                     else
+                     {
+                        TimedRanks.log.severe(TimedRanks.logPrefix + "Error on demoting " + playerName + "!");
                      }
                   }
                   else
                   {
-                     TimedRanks.log.severe(TimedRanks.logPrefix + "Error on demoting " + playerName + "!");
+                     TimedRanks.log.severe(TimedRanks.logPrefix + ChatColor.YELLOW + "Error in cofing file! Group assignment was nor recognizable.");
                   }
-               }
-               else
-               {
-                  TimedRanks.log.severe(TimedRanks.logPrefix + ChatColor.YELLOW + "Error in cofing file! Group assignment was nor recognizable.");
                }
             }
          }         
@@ -124,6 +136,29 @@ They are called in the following order
       else
       {
          // something went wrong
+      }
+   }
+
+   public void checkPlayerPaymentStatus(String playerName)
+   {
+      if (null != playerName)
+      {
+         if(plugin.playerIsInPayedGroup(playerName))
+         {
+            if(plugin.promotionIsActive(playerName))
+            {
+               if(plugin.nextPaymentIsDue(playerName))
+               {
+                  if(plugin.payPlayer(playerName))
+                  {
+                     if(plugin.scheduleNextPayment(playerName, plugin.getPromoteGroup(playerName)))
+                     {
+                        // everything went OK. Error handling is inside the called methods.
+                     }
+                  }
+               }
+            }
+         }
       }
    }
 }

@@ -12,6 +12,7 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import net.milkbowl.vault.permission.Permission;
 
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -30,6 +31,7 @@ public class TimedRanks extends JavaPlugin
    static Economy econ = null;
    static Permission perm = null;
    public static Boolean debug = false;
+   public static String currency = "$";
 
    private List<String> baseGroupList = null;
    private List<String> promoteGroupList = null;
@@ -48,7 +50,7 @@ public class TimedRanks extends JavaPlugin
       // Das Zahlungs-Intervall soll pro Gruppe konfigurierbar sein.
       // promotedPlayers liste entsprechend umbauen, das für jeden Spieler der Ende-Zeitsptempel der Promotion und der Zeitstempel der nächsten Zahlung
       // eingetragen wird.
-      
+
       this.plugin = this; 
 
       cHandler = new TimedRanksConfigHandler(this);
@@ -107,7 +109,7 @@ public class TimedRanks extends JavaPlugin
             resMainConfig = true;
          }  
       }
-      
+
       if(cHandler.getPromotedPlayersConfig().isSet("config_version"))
       {
          String configVersion = cHandler.getPromotedPlayersConfig().getString("config_version");
@@ -117,7 +119,7 @@ public class TimedRanks extends JavaPlugin
             resPromotedPlayersConfig = true;
          }  
       }
-      
+
       if(resMainConfig &&
             resPromotedPlayersConfig)
       {
@@ -168,6 +170,7 @@ public class TimedRanks extends JavaPlugin
       debug = plugin.getConfig().getBoolean("debug");
       baseGroupList = plugin.getConfig().getStringList("basegroups");
       promoteGroupList = plugin.getConfig().getStringList("promotegroups");
+      currency = plugin.getConfig().getString("currencysymbol");
    }
 
    void disablePlugin()
@@ -190,6 +193,7 @@ public class TimedRanks extends JavaPlugin
 
    //######################################################################################
 
+   // ====================== Group management methods ==============================
    public int getGroupPairIndex(String playerName)
    {
       World nullWorld = null;
@@ -295,11 +299,10 @@ public class TimedRanks extends JavaPlugin
          try
          {
             long currTime = ((Calendar)Calendar.getInstance()).getTimeInMillis();
-            long promotionEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName);
+            long promotionEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".endTime");
 
             if(currTime > promotionEndTime)
             {
-               if(TimedRanks.debug){this.getServer().broadcastMessage("Promotion of " + playerName + " ends in " + ((promotionEndTime - currTime) / 1000 / 3600)  + " days.");}
                res = true;
             }
          }
@@ -319,9 +322,33 @@ public class TimedRanks extends JavaPlugin
       if(playerIsOnPromotionList(playerName)) // is player managed via TimedRanks?
       {
          long currTime = ((Calendar)Calendar.getInstance()).getTimeInMillis();
-         long promotionEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName);
+         long promotionEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".endTime");
 
          timeLeft = "< " + String.valueOf(((promotionEndTime - currTime) / 3600L / 1000L) + 1);            
+      }
+
+      return (timeLeft);
+   }
+
+   public String getNextPaymentTime(String playerName)
+   {
+      String timeLeft = "READ ERROR";
+      long nextPaymentTime = 0;
+
+      if(playerIsOnPromotionList(playerName)) // is player managed via TimedRanks?
+      {
+         long currTime = ((Calendar)Calendar.getInstance()).getTimeInMillis();
+
+         // if it does not exist, there is an inconsistency between players rank and the promotiedPlayers-List
+         if(cHandler.getPromotedPlayersConfig().contains("players." + playerName + ".nextPayment")) 
+         {
+            nextPaymentTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".nextPayment");
+            timeLeft = "< " + String.valueOf(((nextPaymentTime - currTime) / 3600L / 1000L) + 1);
+         }
+         else
+         { // player is in payed group, but this was not done via TR. So ignore Payment.
+            timeLeft = "??? -> Inform Admin! <- ";
+         }
       }
 
       return (timeLeft);
@@ -339,20 +366,44 @@ public class TimedRanks extends JavaPlugin
       return (res);
    }
 
-   public Boolean addPlayerToPromotionList(String playerName, long promotionTimeInDays)
+   public Boolean promotionIsActive(String playerName)
+   {
+      Boolean res = false;
+
+      if(cHandler.getPromotedPlayersConfig().getString("players." + playerName + ".status").equalsIgnoreCase("active"))
+      {
+         res = true;
+      }
+
+      return (res);
+   }
+
+   public Boolean addPlayerToPromotionList(String playerName, long promotionTimeInDays, String promoteGroup)
    {
       Boolean success = false;
-      
+
       if((!playerName.equals("")) &&
+            (!promoteGroup.equals("")) &&
             (0 < promotionTimeInDays))
       {
-         long promotionEndTime = (promotionTimeInDays * 3600 * 1000) + ((Calendar)Calendar.getInstance()).getTimeInMillis();
+         long promotionEndTime = (promotionTimeInDays * 3600 * 1000) + ((Calendar)Calendar.getInstance()).getTimeInMillis();        
+         cHandler.getPromotedPlayersConfig().set("players." + playerName + ".endTime", promotionEndTime);
 
-         cHandler.getPromotedPlayersConfig().set("players." + playerName, promotionEndTime);
+         if(playerIsInPayedGroup(playerName)) // add payment Node if player is in payed group
+         {
+            if(payPlayer(playerName)) // make first payment
+            {
+               // schedule next payment
+               long nextPaymentTime = (((Calendar)Calendar.getInstance()).getTimeInMillis() + (getPaymentInterval(promoteGroup) * 3600 * 1000));
+               cHandler.getPromotedPlayersConfig().set("players." + playerName + ".nextPayment", nextPaymentTime);
+            }
+         }
+
+         cHandler.getPromotedPlayersConfig().set("players." + playerName + ".status", "active");
          cHandler.savePromotedPlayersConfig();
          success = true;
       }
-      
+
       return (success);
    }
 
@@ -363,5 +414,217 @@ public class TimedRanks extends JavaPlugin
          cHandler.getPromotedPlayersConfig().set("players." + playerName, null);
          cHandler.savePromotedPlayersConfig();
       }
+   }
+
+   public Boolean pausePromotion(String playerName)
+   {
+      Boolean success = false;
+
+      if(playerIsOnPromotionList(playerName))
+      {
+         if(promotionIsActive(playerName))
+         {         
+            cHandler.getPromotedPlayersConfig().set("players." + playerName + ".status", "paused");         
+            cHandler.getPromotedPlayersConfig().set("players." + playerName + ".pauseTime", ((Calendar)Calendar.getInstance()).getTimeInMillis());         
+            cHandler.savePromotedPlayersConfig();
+            success = true;            
+         }
+      }
+
+      return (success);
+   }
+
+   public Boolean resumePromotion(String playerName)
+   {
+      Boolean success = false;
+
+      if(playerIsOnPromotionList(playerName))
+      {
+         if(!promotionIsActive(playerName))
+         {
+            // how long was the players promotion paused? Correct the endTime and nextPaymentTime by this value
+            long pausedDuration = ((Calendar)Calendar.getInstance()).getTimeInMillis() - cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".pauseTime");
+           
+            long newEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".endTime") + pausedDuration;
+            long newNextPaymentTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".nextPayment") + pausedDuration;
+
+            cHandler.getPromotedPlayersConfig().set("players." + playerName + ".endTime", newEndTime);
+            cHandler.getPromotedPlayersConfig().set("players." + playerName + ".nextPayment", newNextPaymentTime);
+            cHandler.getPromotedPlayersConfig().set("players." + playerName + ".status", "active");
+            cHandler.getPromotedPlayersConfig().set("players." + playerName + ".pauseTime", null);
+            cHandler.savePromotedPlayersConfig();
+            success = true;
+         }
+      }
+
+      return (success);
+   }
+
+   public Boolean addPromotionTime(String playerName, int days)
+   {
+      Boolean success = false;
+
+      if(playerIsOnPromotionList(playerName))
+      {
+         if((0 < days) &&
+               (days < 10000)) // to prevent unrealistic values
+         {
+            long newEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".endTime") + (days * 3600 * 1000);
+                  
+            cHandler.getPromotedPlayersConfig().set("players." + playerName + ".endTime", newEndTime);
+            cHandler.savePromotedPlayersConfig();
+            success = true; 
+         }          
+      }
+
+      return (success);
+   }
+
+   public Boolean substractPromotionTime(String playerName, int days)
+   {
+      Boolean success = false;
+
+      if(playerIsOnPromotionList(playerName))
+      {
+         if(0 < days)
+         {            
+            long newEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".endTime") - (days * 3600 * 1000);
+            
+            // promotion time may only be reduced up to the present time. But not into the past.
+            if(newEndTime < ((Calendar)Calendar.getInstance()).getTimeInMillis())
+            {
+               newEndTime = ((Calendar)Calendar.getInstance()).getTimeInMillis();                
+            }
+                        
+            cHandler.getPromotedPlayersConfig().set("players." + playerName + ".endTime", newEndTime);        
+            cHandler.savePromotedPlayersConfig();
+            success = true;            
+         }         
+      }
+
+      return (success);
+   }
+
+   // =========== Payment methods =========================
+
+   public Boolean nextPaymentIsDue(String playerName)
+   {
+      Boolean res = false;
+      long nextPaymentTime = 0;
+
+      try
+      {    
+         if(playerIsInPayedGroup(playerName))
+         {
+            long currTime = ((Calendar)Calendar.getInstance()).getTimeInMillis();
+            nextPaymentTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".nextPayment");
+
+            if(currTime > nextPaymentTime)
+            {               
+               res = true;           
+            }
+         }
+      }
+      catch (Exception ex)
+      {
+         // Player is probably no longer online or not in the promotionList
+      }
+
+      return (res);
+   }
+
+   public Boolean playerIsInPayedGroup(String playerName)
+   {
+      Boolean res = false;
+
+      if(playerIsOnPromotionList(playerName))
+      {
+         World nullWorld = null;
+
+         String playerGroup = perm.getPrimaryGroup(nullWorld, playerName);
+
+         if(this.getConfig().contains("payedgroups." + playerGroup))
+         {
+            res = true;
+         }         
+      }
+
+      return (res);
+   }
+
+   public int getPaymentInterval(String group)
+   {
+      int interval = 0;
+
+      interval = this.getConfig().getInt("payedgroups." + group + ".interval");
+
+      return (interval);
+   }
+
+   public double getPaymentAmount(String group)
+   {
+      double amount = 0.0;
+
+      amount = this.getConfig().getDouble("payedgroups." + group + ".amount");
+
+      return (amount);
+   }   
+
+   public Boolean payPlayer(String playerName)
+   {
+      Boolean success = false;
+      World nullWorld = null;
+
+      String playerGroup = perm.getPrimaryGroup(nullWorld, playerName);
+
+      try
+      {
+         if(null != playerGroup)
+         {
+            double amount = this.getConfig().getDouble("payedgroups." + playerGroup + ".amount");
+
+            if(0 < amount)
+            {
+               EconomyResponse ecoRes = econ.depositPlayer(playerName, amount);
+
+               if(ecoRes.transactionSuccess())
+               {
+                  success = true;
+
+                  log.info(logPrefix + playerName + " successfully received his regular promotional payment of " + amount + " " + currency + ".");
+
+                  if(this.getServer().getOfflinePlayer(playerName).isOnline())
+                  {
+                     Player player = (Player)this.getServer().getOfflinePlayer(playerName);
+                     player.sendMessage("Du hast soeben die regelmaessige Zahlung fuer deinen " + ChatColor.GREEN + playerGroup + ChatColor.WHITE + "-Rang von " + ChatColor.GREEN + amount + " " + currency + ChatColor.WHITE  + " erhalten.");
+                  }                  
+               }
+            }
+         }
+      }
+      catch (Exception ex)
+      {
+         // something went wrong
+         log.severe(logPrefix + "Payment was unsuccessful for player " + playerName);
+         log.severe(ex.getMessage());
+      }      
+
+      return (success);
+   }
+
+   public Boolean scheduleNextPayment(String playerName, String promoteGroup)
+   {
+      Boolean success = false;
+
+      if((null != playerName) &&
+            (null != promoteGroup))
+      {
+         long nextPaymentTime = (((Calendar)Calendar.getInstance()).getTimeInMillis() + (getPaymentInterval(promoteGroup) * 3600 * 1000));
+         cHandler.getPromotedPlayersConfig().set("players." + playerName + ".nextPayment", nextPaymentTime);
+         cHandler.savePromotedPlayersConfig();
+         success = true;
+      }
+
+      return (success);
    }
 }
