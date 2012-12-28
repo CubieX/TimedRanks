@@ -6,7 +6,9 @@ import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 
-import org.bukkit.configuration.Configuration;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -16,15 +18,13 @@ import org.bukkit.event.player.PlayerJoinEvent;
 public class TimedRanksEntityListener implements Listener
 {
    private final TimedRanks plugin;
-   private final Logger log;
    private final Economy econ; 
    private final Permission perm;
 
    //Constructor
-   public TimedRanksEntityListener(TimedRanks plugin, Logger log, Economy econ, Permission perm)
+   public TimedRanksEntityListener(TimedRanks plugin, Economy econ, Permission perm)
    {
       this.plugin = plugin;
-      this.log = log;
       this.econ = econ;
       this.perm = perm;
 
@@ -62,8 +62,68 @@ They are called in the following order
    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true) // event has MONITOR priority and will be skipped if it has been cancelled before
    public void onPlayerJoin(PlayerJoinEvent event)
    {
-
+      final Player joinedPlayer = event.getPlayer();
+      
+      try
+      {
+         Bukkit.getScheduler().runTaskLater(plugin, new Runnable()
+         {
+            public void run()
+            {
+               checkPlayerPromotionStatus(joinedPlayer.getName());
+            }
+         }, 20*5L); // 5 second delay to give BukkitPermissions time to register joined players permissions         
+      }
+      catch (Exception ex)
+      {
+         // player is probably no longer online
+      }
    }
 
+   void checkPlayerPromotionStatus(String playerName)
+   {
+      if(null != playerName)
+      {
+         if(plugin.playerIsDemotable(playerName))
+         {
+            // Perform time check
+            if(plugin.promotionTimeIsUp(playerName))
+            {
+               // time is up. So demote player.
+               World nullWorld = null;
+               String baseGroup = plugin.getBaseGroup(playerName);
+               String promoteGroup = plugin.getPromoteGroup(playerName);
 
+               if((null != baseGroup) &&
+                     (null != promoteGroup)) // given player is valid and demotable and his groups are found
+               {
+                  if((perm.playerAddGroup(nullWorld, playerName, baseGroup)) && // add player to baseGroup
+                        (perm.playerRemoveGroup(nullWorld, playerName, promoteGroup))) //remove player from current promoteGroup
+                  {
+                     plugin.deletePlayerFromPromotionList(playerName);
+                     TimedRanks.log.info(TimedRanks.logPrefix + playerName + "'s promotion period has expired. Player was demoted to rank: " + baseGroup + ".");
+
+                     if(plugin.getServer().getPlayer(playerName).isOnline())
+                     {
+                        // TODO hier die Messages aus der Config einfügen!  Auch bei den Fehlermeldungen!                      
+                        plugin.getServer().getPlayer(playerName).sendMessage(TimedRanks.logPrefix + "Du wurdest vom " + ChatColor.RED + promoteGroup + ChatColor.GRAY + " zum " + ChatColor.GREEN + baseGroup + ChatColor.GRAY + " zurueckgestuft.");
+                     }
+                  }
+                  else
+                  {
+                     TimedRanks.log.severe(TimedRanks.logPrefix + "Error on demoting " + playerName + "!");
+                  }
+               }
+               else
+               {
+                  TimedRanks.log.severe(TimedRanks.logPrefix + ChatColor.YELLOW + "Error in cofing file! Group assignment was nor recognizable.");
+               }
+            }
+         }         
+      }
+      else
+      {
+         // something went wrong
+      }
+   }
 }

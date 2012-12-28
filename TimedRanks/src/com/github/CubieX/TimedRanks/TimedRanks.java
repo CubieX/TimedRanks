@@ -1,11 +1,19 @@
 package com.github.CubieX.TimedRanks;
 
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.logging.Logger;
-
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import net.milkbowl.vault.permission.Permission;
 
+import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -14,15 +22,22 @@ public class TimedRanks extends JavaPlugin
    private TimedRanksConfigHandler cHandler = null;
    private TimedRanksEntityListener eListener = null;
    private TimedRanksCommandHandler comHandler = null;
+   //private TimedRanksSchedulerHandler schedHandler = null;
 
    private TimedRanks plugin;
-   private static final Logger log = Logger.getLogger("Minecraft");
+   public static final Logger log = Logger.getLogger("Minecraft");
    static final String logPrefix = "[TimedRanks] "; // Prefix to go in front of all log entries
    static Economy econ = null;
    static Permission perm = null;
+   public static Boolean debug = false;
+
+   private List<String> baseGroupList = null;
+   private List<String> promoteGroupList = null;
 
    //************************************************
    static String usedConfigVersion = "1"; // Update this every time the config file version changes, so the plugin knows, if there is a suiting config present
+   //************************************************
+   static String usedPromotedPlayersListConfigFileVersion = "1";
    //************************************************
 
    @Override
@@ -30,15 +45,16 @@ public class TimedRanks extends JavaPlugin
    {     
       this.plugin = this; 
 
-      cHandler = new TimedRanksConfigHandler(this, log);
+      cHandler = new TimedRanksConfigHandler(this);
 
       if(!checkConfigFileVersion())
       {
-         log.severe(logPrefix + "Outdated or corrupted config file. Please delete your current config file, so " + getDescription().getName() + " can create a new one!");
-         log.severe(logPrefix + "will be disabled now. Config file is outdated or corrupted.");
+         log.severe(logPrefix + "Outdated or corrupted config file(s). Please save your promotedPlayers list and then delete your config files."); 
+         log.severe(logPrefix + "will generate new files for you.");
+         log.severe(logPrefix + "will be disabled now. Config file(s) are outdated or corrupted.");
          disablePlugin();
          return;
-      }        
+      }
 
       if (!hookToPermissionSystem())
       {
@@ -63,14 +79,18 @@ public class TimedRanks extends JavaPlugin
 
       log.info(getDescription().getName() + " version " + getDescription().getVersion() + " is enabled!");
 
-      comHandler = new TimedRanksCommandHandler(this, log, cHandler, perm);
+      comHandler = new TimedRanksCommandHandler(this, cHandler, perm);
       getCommand("tr").setExecutor(comHandler);
-      eListener = new TimedRanksEntityListener(this,log, econ, perm);  
+      eListener = new TimedRanksEntityListener(this, econ, perm);
+
+      readConfigValues();
    }
 
    private boolean checkConfigFileVersion()
    {
-      boolean res = false;
+      boolean configOK = false;
+      boolean resMainConfig = false;
+      boolean resPromotedPlayersConfig = false;
 
       if(this.getConfig().isSet("config_version"))
       {
@@ -78,11 +98,27 @@ public class TimedRanks extends JavaPlugin
 
          if(configVersion.equals(usedConfigVersion))
          {
-            res = true;
+            resMainConfig = true;
          }  
       }
+      
+      if(cHandler.getPromotedPlayersConfig().isSet("config_version"))
+      {
+         String configVersion = cHandler.getPromotedPlayersConfig().getString("config_version");
 
-      return (res);
+         if(configVersion.equals(usedPromotedPlayersListConfigFileVersion))
+         {
+            resPromotedPlayersConfig = true;
+         }  
+      }
+      
+      if(resMainConfig &&
+            resPromotedPlayersConfig)
+      {
+         configOK = true;
+      }
+
+      return (configOK);
    }
 
    private boolean hookToPermissionSystem()
@@ -121,21 +157,205 @@ public class TimedRanks extends JavaPlugin
       return (perm != null);
    }
 
+   private void readConfigValues()
+   {
+      debug = plugin.getConfig().getBoolean("debug");
+      baseGroupList = plugin.getConfig().getStringList("basegroups");
+      promoteGroupList = plugin.getConfig().getStringList("promotegroups");
+   }
+
    void disablePlugin()
    {
       getServer().getPluginManager().disablePlugin(this);        
    }
 
-   //TODO l�schen von ganzen keys mit Unterpunkten: plugin.getConfig().getConfigurationSection("Warps").set(args[0], null) + dann config saven!
    @Override
    public void onDisable()
    {       
-      getServer().getScheduler().cancelTasks(this);
+      getServer().getScheduler().cancelTasks(this); // cancels ALL scheduler tasks of TR
+      //schedHandler = null;
       cHandler = null;       
       comHandler = null;
       eListener = null;
       econ = null;
       perm = null;
       log.info(getDescription().getName() + " version " + getDescription().getVersion() + " is disabled!");
-   }   
+   }
+
+   //######################################################################################
+
+   public int getGroupPairIndex(String playerName)
+   {
+      World nullWorld = null;
+      int index = -1;
+      String primaryGroup = perm.getPrimaryGroup(nullWorld, playerName);
+
+      for(int i = 0; i < baseGroupList.size(); i++)
+      {         
+         if(primaryGroup.equalsIgnoreCase(baseGroupList.get(i)))
+         {
+            index = i;
+            break;
+         }         
+      }
+
+      if(index < 0) // if player was not found in baseGroup, check promoteGroup
+      {
+         for(int i = 0; i < promoteGroupList.size(); i++)
+         {
+            if(primaryGroup.equalsIgnoreCase(promoteGroupList.get(i)))
+            {
+               index = i;
+               break;
+            }            
+         }
+      }
+
+      return (index);
+   }
+
+   public String getBaseGroup(String playerName)
+   {      
+      String baseGroup = "";
+      int groupPairIndex = getGroupPairIndex(playerName);
+
+      baseGroup = baseGroupList.get(groupPairIndex);               
+
+      return (baseGroup);
+   }
+
+   public String getPromoteGroup(String playerName)
+   {      
+      String promoteGroup = "";
+      int groupPairIndex = getGroupPairIndex(playerName);
+
+      promoteGroup = promoteGroupList.get(groupPairIndex);                  
+
+      return (promoteGroup);
+   }
+
+   public Boolean playerIsPromotable(String playerName)
+   {
+      World nullWorld = null;
+      Boolean res = false;
+      String primaryGroup = perm.getPrimaryGroup(nullWorld, playerName);
+
+      for(int i = 0; i < baseGroupList.size(); i++)
+      {
+         // Do NOT use playerInGroup() as this seems to also look at derived groups. (e.g. VIP is probably derived from Member)
+         if(primaryGroup.equalsIgnoreCase(baseGroupList.get(i))) // if players group was found in baseList
+         {
+            if(playerIsOnPromotionList(playerName)) // If this is true, the player is on the list, but should not be, because he is currently not promoted
+            { // So delete him
+               deletePlayerFromPromotionList(playerName);
+            }
+
+            res = true;
+            break;
+         }
+      }
+
+      return (res);
+   }
+
+   public Boolean playerIsDemotable(String playerName)
+   {
+      World nullWorld = null;
+      Boolean res = false;
+      String primaryGroup = perm.getPrimaryGroup(nullWorld, playerName);
+
+      for(int i = 0; i < promoteGroupList.size(); i++)
+      {
+         // Do NOT use playerInGroup() as this seems to also look at derived groups. (e.g. VIP is probably derived from Member)
+         if(primaryGroup.equalsIgnoreCase(promoteGroupList.get(i))) // if players group was found in promoteList
+         {            
+            if(playerIsOnPromotionList(playerName)) // is player managed via TimedRanks?
+            {
+               res = true;
+               break;
+            }
+         }
+      }
+
+      return (res);
+   }
+
+   public Boolean promotionTimeIsUp(String playerName)
+   {
+      Boolean res = false;
+
+      if(playerIsOnPromotionList(playerName)) // is player managed via TimedRanks?
+      {
+         try
+         {
+            long currTime = ((Calendar)Calendar.getInstance()).getTimeInMillis();
+            long promotionEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName);
+
+            if(currTime > promotionEndTime)
+            {
+               if(TimedRanks.debug){this.getServer().broadcastMessage("Promotion of " + playerName + " ends in " + ((promotionEndTime - currTime) / 1000 / 3600)  + " days.");}
+               res = true;
+            }
+         }
+         catch (Exception ex)
+         {
+            // Player is probably no longer online or not in the promotionList
+         }
+      }      
+
+      return (res);
+   }
+
+   public String getPromotionEndTime(String playerName)
+   {
+      String timeLeft = "READ ERROR";
+
+      if(playerIsOnPromotionList(playerName)) // is player managed via TimedRanks?
+      {
+         long currTime = ((Calendar)Calendar.getInstance()).getTimeInMillis();
+         long promotionEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName);
+
+         timeLeft = "< " + String.valueOf(((promotionEndTime - currTime) / 3600L / 1000L) + 1);            
+      }
+
+      return (timeLeft);
+   }
+
+   public Boolean playerIsOnPromotionList(String playerName)
+   {
+      Boolean res = false;
+
+      if(cHandler.getPromotedPlayersConfig().contains("players." + playerName))
+      {
+         res = true;
+      }
+
+      return (res);
+   }
+
+   public Boolean addPlayerToPromotionList(String playerName, long promotionTimeInDays)
+   {
+      Boolean success = false;
+      
+      if((!playerName.equals("")) &&
+            (0 < promotionTimeInDays))
+      {
+         long promotionEndTime = (promotionTimeInDays * 3600 * 1000) + ((Calendar)Calendar.getInstance()).getTimeInMillis();
+
+         cHandler.getPromotedPlayersConfig().set("players." + playerName, promotionEndTime);
+         cHandler.savePromotedPlayersConfig();
+         success = true;
+      }
+      
+      return (success);
+   }
+
+   public void deletePlayerFromPromotionList(String playerName)
+   {
+      if(playerIsOnPromotionList(playerName))
+      {
+         cHandler.getPromotedPlayersConfig().set("players." + playerName, null);
+         cHandler.savePromotedPlayersConfig();
+      }
+   }
 }

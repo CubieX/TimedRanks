@@ -1,27 +1,35 @@
-#do NOT change the config version!
+# do NOT change the config version!
 config_version: '1'
-#set locale for user dialog messages
+# set locale for user dialog messages
 language: de
-#enable debug output
+# enable debug output
 debug: false
-#Group definitions are going here. Order is mandatory! 1st basegroup is matched with 1st promotegorup. and so on.
-promotegroups:
-  - VIP
-  - VIPSupporter
-  - VIPModerator
-  - VIPDesigner
+# Group definitions are going here. Order is mandatory!
+# 1st basegroup is matched with 1st promotegorup.
+# 2nd basegroup is matched with 2nd promotegroup and so on.
+# Both groups MUST be equal length!
 basegroups:
   - Member
   - Supporter
   - Moderator
   - Designer
+promotegroups:
+  - VIP
+  - VIPSupporter
+  - VIPModerator
+  - VIPDesigner
 #
 # Message section [GERMAN]
-DE_STATUSMESSAGE_VALID_1: Du hast noch
-DE_STATUSMESSAGE_VALID_2: Tage den VIP-Status.
-DE_STATUSMESSAGE_INVALID: Du hast zur Zeit keinen VIP-Status.
+DE_STATUSMESSAGE_VALID: Du hast noch {0} Tage als {1} uebrig.
+DE_STATUSMESSAGE_INVALID: Du hast zur Zeit keinen {0} Status.
+DE_PROMOTIONMESSAGE: Du wurdest fuer {0} Tage zum {1} ernannt.
+DE_DEMOTIONMESSAGE_AUTO_1: Deine Zeit als {0} ist abgelaufen.
+DE_DEMOTIONMESSAGE_AUTO_2: Du wurdest in die Gruppe {0} zurueckgestuft.
+DE_DEMOTIONMESSAGE_MANUAL: Du wurdest automatisch vom {0} zum {1} zureckgestuft.
 #
 # Message section [ENGLISH]
-EN_STATUSMESSAGE_VALID_1: You have
-EN_STATUSMESSAGE_VALID_2: days left for your VIP state.
-EN_STATUSMESSAGE_INVALID: You currently do not have VIP status.
+EN_STATUSMESSAGE_VALID: You have {0} days left as {1}.
+EN_STATUSMESSAGE_INVALID: You currently do not have {0} VIP status.
+EN_DEMOTIONMESSAGE_AUTO_1: Your time as {0} has expired.
+EN_DEMOTIONMESSAGE_AUTO_2: You have automaticly been demoted to group {0}.
+EN_DEMOTIONMESSAGE_MANUAL: You have been demoted from {0} to {1}.

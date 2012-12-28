@@ -1,4 +1,6 @@
 Known issues:
 -------------
 
-- only german translation until now
+- only german translation active until now
+- adding and subtracting time for promotions not yet implemented
+- pausing and resuming promotions not yet implemented

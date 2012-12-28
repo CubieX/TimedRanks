@@ -1,5 +1,5 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
 
-V. 0.1
+V. 1.0.0
 - Initial version

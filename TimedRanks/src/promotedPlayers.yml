@@ -1,3 +1,9 @@
-﻿defaultplayer:
-  promotionTimestamp: 1348597906
-  daysPromoted: 30
+#*****************************************************
+# Promotion List                                     *
+# --------------                                     *
+# Timestamp is the UNIX time when the promotion ends *
+#*****************************************************
+#do NOT change the file version!
+config_version: '1'
+players:
+  defaultplayer: 1356723668788

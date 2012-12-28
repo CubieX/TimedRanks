@@ -2,18 +2,18 @@ name: TimedRanks
 main: com.github.CubieX.TimedRanks.TimedRanks
 depend: [Vault]
 softdepend: [PermissionsEx, zPermissions, bPermissions, PermissionsBukkit]
-version: 0.1
+version: 1.0.0
 description: Automated, timed rank promotion and demotion
 
 commands:
     tr:
       description: Using TimedRanks
-      usage: /tr version | reload
+      usage: /tr version | reload | status | promote | demote | add/gib | sub/nimm | pause | resume
 
 permissions:
     
-    timedranks.promote:
-        description: Allows promoting a player for the given time to the configured rank.
+    timedranks.manage:
+        description: Allows all player dependend actions (promoting, demoting, ect.)
         default: op
 
     timedranks.admin:

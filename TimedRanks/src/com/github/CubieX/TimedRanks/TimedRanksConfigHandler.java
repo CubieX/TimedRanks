@@ -3,9 +3,6 @@ package com.github.CubieX.TimedRanks;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -14,7 +11,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 public class TimedRanksConfigHandler
 {
    private final TimedRanks plugin;
-   private final Logger log;
 
    private FileConfiguration config;
    private FileConfiguration promoPlayersCfg = null;
@@ -22,10 +18,9 @@ public class TimedRanksConfigHandler
    private final String promotedPlayersFileName = "promotedPlayers.yml";
 
    //Constructor
-   public TimedRanksConfigHandler(TimedRanks plugin, Logger log)
+   public TimedRanksConfigHandler(TimedRanks plugin)
    {        
       this.plugin = plugin;
-      this.log = log;
 
       initConfig();        
    }
@@ -51,8 +46,10 @@ public class TimedRanksConfigHandler
    {
       plugin.reloadConfig();
       config = plugin.getConfig(); // new assignment neccessary when returned value is assigned to a variable or static field(!)
+      
+      reloadPromotedPlayersConfig();
 
-      sender.sendMessage("[" + ChatColor.GREEN + "Info" + ChatColor.WHITE + "] " + ChatColor.GREEN + plugin.getDescription().getName() + " " + plugin.getDescription().getVersion() + " reloaded!");       
+      sender.sendMessage(ChatColor.GREEN + plugin.getDescription().getName() + " " + plugin.getDescription().getVersion() + " reloaded!");       
    }
 
    // =====================================
@@ -100,7 +97,8 @@ public class TimedRanksConfigHandler
       }
       catch (IOException ex)
       {
-         log.log(Level.SEVERE, "Could not save config to " + promotedPlayersConfigFile, ex);
+         TimedRanks.log.severe("Could not save config to " + promotedPlayersConfigFile);
+         TimedRanks.log.severe(ex.getMessage());
       }
    }
 
