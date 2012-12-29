@@ -32,6 +32,10 @@ public class TimedRanks extends JavaPlugin
    static Permission perm = null;
    public static Boolean debug = false;
    public static String currency = "$";
+   public static final double MIN_AMOUNT = 0.01;
+   public static final double MAX_AMOUNT = 1000000;
+   public static final int MIN_INTERVAL = 1;
+   public static final int MAX_INTERVAL = 365;
 
    private List<String> baseGroupList = null;
    private List<String> promoteGroupList = null;
@@ -173,7 +177,7 @@ public class TimedRanks extends JavaPlugin
       currency = plugin.getConfig().getString("currencysymbol");
       
       // TODO implement check and limiting for valid values for all config fields. Especcially interval and amount of payed money!
-      // Read values then from local variables and not from config.
+      // Either Read values then from local variables and not from config. Or limit those values in their according get() methods.
       // but beware: it is possible that no payedgroups are present!
    }
 
@@ -562,6 +566,16 @@ public class TimedRanks extends JavaPlugin
 
       interval = this.getConfig().getInt("payedgroups." + group + ".interval");
 
+      if (interval < MIN_INTERVAL)
+      {
+         interval = MIN_INTERVAL;
+      }
+      
+      if (interval > MAX_INTERVAL)
+      {
+         interval = MAX_INTERVAL;
+      }
+      
       return (interval);
    }
 
@@ -570,6 +584,16 @@ public class TimedRanks extends JavaPlugin
       double amount = 0.0;
 
       amount = this.getConfig().getDouble("payedgroups." + group + ".amount");
+      
+      if(amount < MIN_AMOUNT)
+      {
+         amount = MIN_AMOUNT;
+      }
+      
+      if(amount > MAX_AMOUNT)
+      {
+         amount = MAX_AMOUNT;
+      }
 
       return (amount);
    }   
