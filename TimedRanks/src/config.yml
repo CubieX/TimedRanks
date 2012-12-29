@@ -19,6 +19,8 @@ promotegroups:
   - VIPModerator
   - VIPDesigner
 # members of the following groups will receive regular payments
+# interval may be between 1 and 365.
+# amount may be between 0.01 and 1000000.00
 payedgroups:
   VIP:
     interval: 30

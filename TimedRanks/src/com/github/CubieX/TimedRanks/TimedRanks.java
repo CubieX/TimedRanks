@@ -171,6 +171,10 @@ public class TimedRanks extends JavaPlugin
       baseGroupList = plugin.getConfig().getStringList("basegroups");
       promoteGroupList = plugin.getConfig().getStringList("promotegroups");
       currency = plugin.getConfig().getString("currencysymbol");
+      
+      // TODO implement check and limiting for valid values for all config fields. Especcially interval and amount of payed money!
+      // Read values then from local variables and not from config.
+      // but beware: it is possible that no payedgroups are present!
    }
 
    void disablePlugin()
