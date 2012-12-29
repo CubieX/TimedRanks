@@ -66,21 +66,22 @@ public class TimedRanksCommandHandler implements CommandExecutor
 
             // SHOW OWN PROMOTION STATUS
             if (args[0].equalsIgnoreCase("status")) // no name given, so show status of player that issued the command
-            { 
+            {
                if(sender.hasPermission("timedranks.status.own"))
                {
                   if(sender instanceof Player)
                   {
                      if(plugin.playerIsOnPromotionList(sender.getName()))
                      {
+                        String promoteGroup = plugin.getPromoteGroup(sender.getName());
+                        
                         if(plugin.promotionIsActive(sender.getName()))
-                        {
-                           String promoteGroup = plugin.getPromoteGroup(sender.getName());
+                        {                           
                            sender.sendMessage(ChatColor.WHITE + "Deine Ernennung zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet in " + ChatColor.GREEN + plugin.getPromotionEndTime(sender.getName()) + ChatColor.WHITE + " Tagen.");
                         }
                         else
                         {
-                           sender.sendMessage(ChatColor.WHITE + "Deine Ernennung ist zur Zeit pausiert.");
+                           sender.sendMessage(ChatColor.WHITE + "Deine Ernennung zum " + ChatColor.GREEN + promoteGroup + " ist zur Zeit pausiert.");
                         }
                      }
                      else
@@ -195,10 +196,10 @@ public class TimedRanksCommandHandler implements CommandExecutor
                   {
                      if(plugin.playerIsOnPromotionList(playerNameToShowStatus))
                      {
+                        String promoteGroup = plugin.getPromoteGroup(playerNameToShowStatus);
+                        
                         if(plugin.promotionIsActive(playerNameToShowStatus))
                         {
-                           String promoteGroup = plugin.getPromoteGroup(playerNameToShowStatus);
-
                            if(sender instanceof Player)
                            {                           
                               sender.sendMessage(ChatColor.WHITE + "Die Ernennung von " + playerNameToShowStatus + " zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet in " + ChatColor.GREEN + plugin.getPromotionEndTime(playerNameToShowStatus) + ChatColor.WHITE + " Tagen.");
@@ -222,11 +223,11 @@ public class TimedRanksCommandHandler implements CommandExecutor
                         {
                            if(sender instanceof Player)
                            {
-                              sender.sendMessage(TimedRanks.logPrefix + "Die Ernennung dieses Spielers ist zur Zeit pausiert.");
+                              sender.sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Die Ernennung dieses Spielers zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " ist zur Zeit pausiert.");
                            }
                            else
                            {
-                              sender.sendMessage(TimedRanks.logPrefix + "This players promotion is currently paused.");
+                              sender.sendMessage(TimedRanks.logPrefix + "This players promotion to rank " + promoteGroup + " is currently paused.");
                            }
                         }
                      }
@@ -279,17 +280,19 @@ public class TimedRanksCommandHandler implements CommandExecutor
                   {
                      if(plugin.playerIsOnPromotionList(playersNameToPause))
                      {
+                        String promoteGroup = plugin.getPromoteGroup(playersNameToPause);
+                        
                         if(plugin.promotionIsActive(playersNameToPause))
                         {
                            if(plugin.pausePromotion(playersNameToPause))
                            {
                               if(sender instanceof Player)
                               {
-                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Die Ernennung dieses Spielers wurde pausiert.");
+                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Die Ernennung dieses Spielers zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " ist jetzt pausiert.");
                               }
                               else
                               {
-                                 sender.sendMessage(TimedRanks.logPrefix + "Promotion of this players has been paused.");
+                                 sender.sendMessage(TimedRanks.logPrefix + "Promotion of this players to rank " + promoteGroup + " is now paused.");
                               }
                            }
                            else
@@ -308,11 +311,11 @@ public class TimedRanksCommandHandler implements CommandExecutor
                         {
                            if(sender instanceof Player)
                            {
-                              sender.sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Die Ernennung dieses Spielers ist bereits pausiert.");
+                              sender.sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Die Ernennung dieses Spielers zum " + ChatColor.GREEN + promoteGroup + ChatColor.YELLOW + " ist bereits pausiert.");
                            }
                            else
                            {
-                              sender.sendMessage(TimedRanks.logPrefix + "Promotion of this player has already been paused.");
+                              sender.sendMessage(TimedRanks.logPrefix + "Promotion of this player to rank " + promoteGroup + " has already been paused.");
                            }
                         }                        
                      }
@@ -354,17 +357,19 @@ public class TimedRanksCommandHandler implements CommandExecutor
                   {
                      if(plugin.playerIsOnPromotionList(playersNameToResume))
                      {
+                        String promoteGroup = plugin.getPromoteGroup(playersNameToResume);
+                        
                         if(!plugin.promotionIsActive(playersNameToResume))
                         {
                            if(plugin.resumePromotion(playersNameToResume))
                            {
                               if(sender instanceof Player)
                               {
-                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Die Ernennung dieses Spielers wurde wieder aktiviert.");
+                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Die Ernennung dieses Spielers zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " wurde wieder aktiviert.");
                               }
                               else
                               {
-                                 sender.sendMessage(TimedRanks.logPrefix + "Promotion of this players has been reactivated.");
+                                 sender.sendMessage(TimedRanks.logPrefix + "Promotion of this players to rank " + promoteGroup + " has been reactivated.");
                               }
                            }
                            else
@@ -383,11 +388,11 @@ public class TimedRanksCommandHandler implements CommandExecutor
                         {
                            if(sender instanceof Player)
                            {
-                              sender.sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Die Ernennung dieses Spielers ist schon aktiv.");
+                              sender.sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Die Ernennung dieses Spielers zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " ist schon aktiv.");
                            }
                            else
                            {
-                              sender.sendMessage(TimedRanks.logPrefix + "Promotion of this players is already active.");
+                              sender.sendMessage(TimedRanks.logPrefix + "Promotion of this player to rank " + promoteGroup + " is already active.");
                            }
                         }                        
                      }
@@ -536,7 +541,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                   if(null != playersNameToPay)
                   {
                      if(plugin.playerIsInPayedGroup(playersNameToPay))
-                     {                        
+                     {
                         String promoteGroup = plugin.getPromoteGroup(playersNameToPay);
 
                         if(null != promoteGroup)

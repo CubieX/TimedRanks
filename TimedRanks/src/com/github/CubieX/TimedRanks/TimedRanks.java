@@ -170,7 +170,7 @@ public class TimedRanks extends JavaPlugin
       baseGroupList = plugin.getConfig().getStringList("basegroups");
       promoteGroupList = plugin.getConfig().getStringList("promotegroups");
       currency = plugin.getConfig().getString("currencysymbol");
-      
+
       // TODO implement check and limiting for valid values for all config fields. Especcially interval and amount of payed money!
       // Either Read values then from local variables and not from config. Or limit those values in their according get() methods.
       // but beware: it is possible that no payedgroups are present!
@@ -424,15 +424,23 @@ public class TimedRanks extends JavaPlugin
    public Boolean pausePromotion(String playerName)
    {
       Boolean success = false;
+      World nullWorld = null;
 
       if(playerIsOnPromotionList(playerName))
       {
          if(promotionIsActive(playerName))
-         {         
-            cHandler.getPromotedPlayersConfig().set("players." + playerName + ".status", "paused");         
-            cHandler.getPromotedPlayersConfig().set("players." + playerName + ".pauseTime", ((Calendar)Calendar.getInstance()).getTimeInMillis());         
-            cHandler.savePromotedPlayersConfig();
-            success = true;            
+         {
+            String baseGroup = plugin.getBaseGroup(playerName);
+            String promoteGroup = plugin.getPromoteGroup(playerName);
+
+            if((perm.playerAddGroup(nullWorld, playerName, baseGroup)) && // add player to baseGroup
+                  (perm.playerRemoveGroup(nullWorld, playerName, promoteGroup))) //remove player from current promoteGroup
+            {
+               cHandler.getPromotedPlayersConfig().set("players." + playerName + ".status", "paused");         
+               cHandler.getPromotedPlayersConfig().set("players." + playerName + ".pauseTime", ((Calendar)Calendar.getInstance()).getTimeInMillis());         
+               cHandler.savePromotedPlayersConfig();
+               success = true;   
+            }
          }
       }
 
@@ -442,23 +450,30 @@ public class TimedRanks extends JavaPlugin
    public Boolean resumePromotion(String playerName)
    {
       Boolean success = false;
+      World nullWorld = null;
 
       if(playerIsOnPromotionList(playerName))
       {
          if(!promotionIsActive(playerName))
          {
-            // how long was the players promotion paused? Correct the endTime and nextPaymentTime by this value
-            long pausedDuration = ((Calendar)Calendar.getInstance()).getTimeInMillis() - cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".pauseTime");
-           
-            long newEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".endTime") + pausedDuration;
-            long newNextPaymentTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".nextPayment") + pausedDuration;
+            String baseGroup = plugin.getBaseGroup(playerName);
+            String promoteGroup = plugin.getPromoteGroup(playerName);
 
-            cHandler.getPromotedPlayersConfig().set("players." + playerName + ".endTime", newEndTime);
-            cHandler.getPromotedPlayersConfig().set("players." + playerName + ".nextPayment", newNextPaymentTime);
-            cHandler.getPromotedPlayersConfig().set("players." + playerName + ".status", "active");
-            cHandler.getPromotedPlayersConfig().set("players." + playerName + ".pauseTime", null);
-            cHandler.savePromotedPlayersConfig();
-            success = true;
+            if((perm.playerAddGroup(nullWorld, playerName, promoteGroup)) && // add player to promoteGroup                     
+                  (perm.playerRemoveGroup(nullWorld, playerName, baseGroup))) //remove player from current baseGroup
+            {
+               // how long was the players promotion paused? Correct the endTime and nextPaymentTime by this value
+               long pausedDuration = ((Calendar)Calendar.getInstance()).getTimeInMillis() - cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".pauseTime");           
+               long newEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".endTime") + pausedDuration;
+               long newNextPaymentTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".nextPayment") + pausedDuration;
+
+               cHandler.getPromotedPlayersConfig().set("players." + playerName + ".endTime", newEndTime);
+               cHandler.getPromotedPlayersConfig().set("players." + playerName + ".nextPayment", newNextPaymentTime);
+               cHandler.getPromotedPlayersConfig().set("players." + playerName + ".status", "active");
+               cHandler.getPromotedPlayersConfig().set("players." + playerName + ".pauseTime", null);
+               cHandler.savePromotedPlayersConfig();
+               success = true;  
+            }            
          }
       }
 
@@ -475,7 +490,7 @@ public class TimedRanks extends JavaPlugin
                (days < 10000)) // to prevent unrealistic values
          {
             long newEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".endTime") + (days * 3600 * 1000);
-                  
+
             cHandler.getPromotedPlayersConfig().set("players." + playerName + ".endTime", newEndTime);
             cHandler.savePromotedPlayersConfig();
             success = true; 
@@ -494,13 +509,13 @@ public class TimedRanks extends JavaPlugin
          if(0 < days)
          {            
             long newEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".endTime") - (days * 3600 * 1000);
-            
+
             // promotion time may only be reduced up to the present time. But not into the past.
             if(newEndTime < ((Calendar)Calendar.getInstance()).getTimeInMillis())
             {
                newEndTime = ((Calendar)Calendar.getInstance()).getTimeInMillis();                
             }
-                        
+
             cHandler.getPromotedPlayersConfig().set("players." + playerName + ".endTime", newEndTime);        
             cHandler.savePromotedPlayersConfig();
             success = true;            
@@ -567,12 +582,12 @@ public class TimedRanks extends JavaPlugin
       {
          interval = MIN_INTERVAL;
       }
-      
+
       if (interval > MAX_INTERVAL)
       {
          interval = MAX_INTERVAL;
       }
-      
+
       return (interval);
    }
 
@@ -581,12 +596,12 @@ public class TimedRanks extends JavaPlugin
       double amount = 0.0;
 
       amount = this.getConfig().getDouble("payedgroups." + group + ".amount");
-      
+
       if(amount < MIN_AMOUNT)
       {
          amount = MIN_AMOUNT;
       }
-      
+
       if(amount > MAX_AMOUNT)
       {
          amount = MAX_AMOUNT;
