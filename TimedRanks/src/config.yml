@@ -5,7 +5,7 @@ language: de
 # enable debug output
 debug: false
 # Group definitions are going here. Order is mandatory!
-# 1st basegroup is matched with 1st promotegorup.
+# 1st basegroup is matched with 1st promotegroup.
 # 2nd basegroup is matched with 2nd promotegroup and so on.
 # Both groups MUST be equal length!
 basegroups:
