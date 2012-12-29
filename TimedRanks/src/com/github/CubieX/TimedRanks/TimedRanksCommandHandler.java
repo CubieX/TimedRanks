@@ -1,5 +1,7 @@
 package com.github.CubieX.TimedRanks;
 
+import java.util.Set;
+
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -94,6 +96,79 @@ public class TimedRanksCommandHandler implements CommandExecutor
                else
                {
                   sender.sendMessage(ChatColor.RED + "Du hast keine Berechtigung um deinen Status abzufragen!");
+               }
+
+               return true;
+            }
+
+            // SHOW A LIST OF ALL CURRENTLY PROMOTED PLAYERS
+            if (args[0].equalsIgnoreCase("list") || args[0].equalsIgnoreCase("liste"))
+            { 
+               if(sender.hasPermission("timedranks.admin"))
+               {
+                  int countAll = 0;
+                  int countActive = 0;
+                  int countPaused = 0;
+                  String status = "READ ERROR";
+                  String daysLeft = "READ_ERROR";                     
+                  Set<String> promotedPlayersList = cHandler.getPromotedPlayersConfig().getConfigurationSection("players").getKeys(false);
+
+                  if(sender instanceof Player)
+                  {
+                     sender.sendMessage(ChatColor.WHITE + "----------------------------------------------");
+                     sender.sendMessage(ChatColor.GREEN + "Liste ernannter Spieler");
+                     sender.sendMessage(ChatColor.WHITE + "----------------------------------------------");
+                  }
+                  else
+                  {
+                     sender.sendMessage("--------------------------------------------------------");
+                     sender.sendMessage("List of promoted players");
+                     sender.sendMessage("--------------------------------------------------------");
+                  }
+                  
+                  for (String name : promotedPlayersList)
+                  {  
+                     if(plugin.promotionIsActive(name))
+                     {
+                        status = ChatColor.GREEN + "active";
+                        countActive++;
+                        countAll++;
+                     }
+                     else
+                     {
+                        status = ChatColor.RED + "paused";
+                        countPaused++;
+                        countAll++;
+                     }
+
+                     daysLeft = plugin.getPromotionEndTime(name);
+
+                     if(sender instanceof Player)
+                     {
+                        sender.sendMessage(ChatColor.GREEN + name + ChatColor.WHITE + ": Expires in " + ChatColor.YELLOW + daysLeft + ChatColor.WHITE + " days. Status: " + status);
+                     }
+                     else
+                     {
+                        sender.sendMessage(name + ": Expires in " + daysLeft + " days. Status: " + status);
+                     }
+                  }
+
+                  if(sender instanceof Player)
+                  {
+                     sender.sendMessage(ChatColor.WHITE + "----------------------------------------------");
+                     sender.sendMessage(ChatColor.WHITE + "Ernannt Gesamt: " + ChatColor.YELLOW + countAll + ChatColor.WHITE + " | Aktiv: " + ChatColor.GREEN + countActive + ChatColor.WHITE + " | Pausiert: " + ChatColor.RED + countPaused);
+                     sender.sendMessage(ChatColor.WHITE + "----------------------------------------------");
+                  }
+                  else
+                  {
+                     sender.sendMessage("--------------------------------------------------------");
+                     sender.sendMessage("Promoted total: " + countAll + " | Active: " + countActive + " | Paused: " + countPaused);
+                     sender.sendMessage("--------------------------------------------------------");
+                  }
+               }
+               else
+               {
+                  sender.sendMessage(ChatColor.RED + "Du hast keine Berechtigung um die Liste anzuzeigen!");
                }
 
                return true;
@@ -479,7 +554,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                                  {
                                     TimedRanks.log.info(TimedRanks.logPrefix + "Player has been payed. Next pay time has been postponed acordingly.");
                                  }
-                                 
+
                                  try
                                  {
                                     if(plugin.getServer().getPlayer(playersNameToPay).isOnline())

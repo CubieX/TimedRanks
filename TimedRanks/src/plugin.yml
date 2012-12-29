@@ -8,7 +8,7 @@ description: Automated, timed rank promotion and demotion
 commands:
     tr:
       description: Using TimedRanks
-      usage: /tr version | reload | status | promote | demote | add | sub | pause | resume | pay
+      usage: /tr version | reload | status | promote | demote | add | sub | pause | resume | pay | list
 
 permissions:
     

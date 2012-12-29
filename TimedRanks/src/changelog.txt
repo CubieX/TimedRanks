@@ -1,5 +1,8 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
 
+V. 1.1.0
+- added command /tr list to show a list of all currently promoted players and their expiry time and status 
+
 V. 1.0.0
 - Initial version

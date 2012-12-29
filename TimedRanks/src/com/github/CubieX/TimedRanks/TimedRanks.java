@@ -1,11 +1,6 @@
 package com.github.CubieX.TimedRanks;
 
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
@@ -323,6 +318,7 @@ public class TimedRanks extends JavaPlugin
       return (res);
    }
 
+   // returns the left days in promoted status
    public String getPromotionEndTime(String playerName)
    {
       String timeLeft = "READ ERROR";
@@ -338,6 +334,7 @@ public class TimedRanks extends JavaPlugin
       return (timeLeft);
    }
 
+   // returns the left days until next payment is due
    public String getNextPaymentTime(String playerName)
    {
       String timeLeft = "READ ERROR";
