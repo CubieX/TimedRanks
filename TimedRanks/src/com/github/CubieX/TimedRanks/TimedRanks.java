@@ -35,11 +35,11 @@ public class TimedRanks extends JavaPlugin
    private List<String> baseGroupList = null;
    private List<String> promoteGroupList = null;
 
-   //************************************************
+   //*************************************************
    static String usedConfigVersion = "1"; // Update this every time the config file version changes, so the plugin knows, if there is a suiting config present
-   //************************************************
+   //*************************************************
    static String usedPromotedPlayersListConfigFileVersion = "1";
-   //************************************************
+   //*************************************************
 
    @Override
    public void onEnable()
