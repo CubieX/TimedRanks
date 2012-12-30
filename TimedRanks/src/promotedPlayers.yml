@@ -1,12 +1,16 @@
-#*****************************************************
-# Promotion List                                     *
-# --------------                                     *
-# Timestamp is the UNIX time when the promotion ends *
-#*****************************************************
-#do NOT change the file version!
+# *****************************************************
+# Promotion List                                      *
+# --------------                                      *
+# Timestamp is the UNIX time when the promotion ends  *
+# *****************************************************
+# a player entry look like:
+# players:
+#   defaultplayer:
+#     endTime: 1356723668788
+#     nextPayment: 1356723500000
+#     status: active
+# ***************************************************** 
+#
+# do NOT change the file version!
 config_version: '1'
 players:
-  defaultplayer:
-    endTime: 1356723668788
-    nextPayment: 1356723500000
-    status: active

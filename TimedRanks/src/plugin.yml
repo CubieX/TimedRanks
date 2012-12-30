@@ -2,14 +2,14 @@ name: TimedRanks
 main: com.github.CubieX.TimedRanks.TimedRanks
 depend: [Vault]
 softdepend: [PermissionsEx, zPermissions, bPermissions, PermissionsBukkit]
-version: 1.1.1
+version: 1.2.0
 description: Automated, timed rank promotion and demotion
 
 commands:
     tr:
-      description: Using TimedRanks
+      description: Using TimedRanks. /vip can be used as alias for /tr!
       aliases: vip
-      usage: /tr version | reload | status | promote | demote | add | sub | pause | resume | pay | list
+      usage: /tr version | reload | status | promote | demote | add | sub | pause | resume | pay | list | del
 
 permissions:
     

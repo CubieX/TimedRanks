@@ -65,7 +65,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             }
 
             // SHOW OWN PROMOTION STATUS
-            if (args[0].equalsIgnoreCase("status")) // no name given, so show status of player that issued the command
+            if ((args[0].equalsIgnoreCase("status")) || (args[0].equalsIgnoreCase("info"))) // no name given, so show status of player that issued the command
             {
                if(sender.hasPermission("timedranks.status.own"))
                {
@@ -74,7 +74,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      if(plugin.playerIsOnPromotionList(sender.getName()))
                      {
                         String promoteGroup = plugin.getPromoteGroup(sender.getName());
-                        
+
                         if(plugin.promotionIsActive(sender.getName()))
                         {                           
                            sender.sendMessage(ChatColor.WHITE + "Deine Ernennung zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet in " + ChatColor.GREEN + plugin.getPromotionEndTime(sender.getName()) + ChatColor.WHITE + " Tagen.");
@@ -126,7 +126,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      sender.sendMessage("List of promoted players");
                      sender.sendMessage("--------------------------------------------------------");
                   }
-                  
+
                   for (String name : promotedPlayersList)
                   {  
                      if(plugin.promotionIsActive(name))
@@ -179,7 +179,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
          if (args.length == 2)
          {
             // SHOW OTHER PLAYERS PROMOTION STATUS
-            if (args[0].equalsIgnoreCase("status")) // show the status of the given player
+            if ((args[0].equalsIgnoreCase("status")) || (args[0].equalsIgnoreCase("info"))) // show the status of the given player
             {
                if(sender.hasPermission("timedranks.status.other"))
                {
@@ -197,7 +197,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      if(plugin.playerIsOnPromotionList(playerNameToShowStatus))
                      {
                         String promoteGroup = plugin.getPromoteGroup(playerNameToShowStatus);
-                        
+
                         if(plugin.promotionIsActive(playerNameToShowStatus))
                         {
                            if(sender instanceof Player)
@@ -281,7 +281,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      if(plugin.playerIsOnPromotionList(playersNameToPause))
                      {
                         String promoteGroup = plugin.getPromoteGroup(playersNameToPause);
-                        
+
                         if(plugin.promotionIsActive(playersNameToPause))
                         {
                            if(plugin.pausePromotion(playersNameToPause))
@@ -358,7 +358,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      if(plugin.playerIsOnPromotionList(playersNameToResume))
                      {
                         String promoteGroup = plugin.getPromoteGroup(playersNameToResume);
-                        
+
                         if(!plugin.promotionIsActive(playersNameToResume))
                         {
                            if(plugin.resumePromotion(playersNameToResume))
@@ -494,13 +494,16 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      }
                      else
                      {
+                        World nullWorld = null;
+                        String primaryGroup = perm.getPrimaryGroup(nullWorld, playersNameToDemote);
+                        
                         if(sender instanceof Player)
                         {
-                           sender.sendMessage(TimedRanks.logPrefix + "Dieser Spieler ist momentan nicht ueber " + plugin.getDescription().getName() + " in einen hoeheren Rang ernannt.");
+                           sender.sendMessage(TimedRanks.logPrefix + "Dieser Spieler ist " + ChatColor.GREEN + primaryGroup + ChatColor.WHITE + " und momentan nicht ueber " + plugin.getDescription().getName() + " in einen hoeheren Rang ernannt.");
                         }
                         else
                         {
-                           sender.sendMessage(TimedRanks.logPrefix + "This Player is currently not promoted in a higher rank by " + plugin.getDescription().getName() + ".");
+                           sender.sendMessage(TimedRanks.logPrefix + "This Player is " + primaryGroup + " and currently not promoted in a higher rank by " + plugin.getDescription().getName() + ".");
                         }
                      }
                   }
@@ -590,13 +593,16 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      }
                      else
                      {
+                        World nullWorld = null;
+                        String primaryGroup = perm.getPrimaryGroup(nullWorld, playersNameToPay);
+                        
                         if(sender instanceof Player)
                         {
-                           sender.sendMessage(TimedRanks.logPrefix + "Dieser Spieler ist momentan nicht ueber " + plugin.getDescription().getName() + " in einen hoeheren Rang ernannt.");
+                           sender.sendMessage(TimedRanks.logPrefix + "Dieser Spieler ist " + ChatColor.GREEN + primaryGroup + ChatColor.WHITE + " und momentan nicht ueber " + plugin.getDescription().getName() + " in einen hoeheren Rang ernannt.");
                         }
                         else
                         {
-                           sender.sendMessage(TimedRanks.logPrefix + "This Player is currently not promoted in a higher rank by " + plugin.getDescription().getName() + ".");
+                           sender.sendMessage(TimedRanks.logPrefix + "This Player is " + primaryGroup + " and currently not promoted in a higher rank by " + plugin.getDescription().getName() + ".");
                         }
                      }
                   }
@@ -611,6 +617,54 @@ public class TimedRanksCommandHandler implements CommandExecutor
                         sender.sendMessage(TimedRanks.logPrefix + "Player not found. Please check the name!");
                      }
                   }                  
+               }
+               else
+               {
+                  sender.sendMessage(ChatColor.RED + "Du hast keine Berechtigung um Raenge zu managen!");
+               }
+
+               return true;
+            }
+
+            // DELETE A PLAYER FROM PROMOTION LIST WITHOUT ANY CHECKS OR RANK MODIFICATIONS
+            // This is only necessary if the players rank was modified without using TR
+            if ((args[0].equalsIgnoreCase("del")) || (args[0].equalsIgnoreCase("delete")) || args[0].equalsIgnoreCase("loeschen"))
+            {                 
+               if(sender.hasPermission("timedranks.admin"))
+               {
+                  OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(args[1]); // Caution. This always returns a valid object!
+                  String playersNameToDelete = null;
+
+                  if((null != offlinePlayer) &&
+                        (offlinePlayer.hasPlayedBefore())) // checks if this player is a valid one
+                  {
+                     playersNameToDelete = offlinePlayer.getName();   
+                  }
+
+                  if(null != playersNameToDelete)
+                  {
+                     plugin.deletePlayerFromPromotionList(playersNameToDelete);
+
+                     if(sender instanceof Player)
+                     {
+                        sender.sendMessage(TimedRanks.logPrefix + ChatColor.RED + playersNameToDelete + ChatColor.WHITE + " wurde von der Ernennungsliste geloescht!");
+                     }
+                     else
+                     {
+                        TimedRanks.log.info(TimedRanks.logPrefix + playersNameToDelete + " has been deleted from the promotion list!");
+                     }
+                  }
+                  else
+                  {
+                     if(sender instanceof Player)
+                     {
+                        sender.sendMessage(TimedRanks.logPrefix + "Spieler wurde nicht gefunden. Bitte Name pruefen!");
+                     }
+                     else
+                     {
+                        sender.sendMessage(TimedRanks.logPrefix + "Player not found. Please check the name!");
+                     }
+                  }
                }
                else
                {
@@ -729,10 +783,12 @@ public class TimedRanksCommandHandler implements CommandExecutor
                         if(sender instanceof Player)
                         {
                            sender.sendMessage(TimedRanks.logPrefix + "Dieser Spieler ist " + ChatColor.YELLOW + perm.getPrimaryGroup(nWorld, playersNameToPromote) + ChatColor.WHITE + " und kann nicht weiter mit " + plugin.getDescription().getName() + " befoerdert werden.");
+                           sender.sendMessage(TimedRanks.logPrefix + "Bitte den Ernennungs-Status des Spielers mit /tr status SPIELER pruefen.");
                         }
                         else
                         {
                            sender.sendMessage(TimedRanks.logPrefix + "This player is " + perm.getPrimaryGroup(nWorld, playersNameToPromote) + " and cannot be promoted further by " + plugin.getDescription().getName() + ".");
+                           sender.sendMessage(TimedRanks.logPrefix + "Please check players promotion status using /tr status PLAYER.");
                         }
                      }
                   }
@@ -946,7 +1002,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
          }         
          else
          {
-            sender.sendMessage(ChatColor.YELLOW + TimedRanks.logPrefix + "Falsche Anzahl an Parametern.");            
+            sender.sendMessage(ChatColor.YELLOW + TimedRanks.logPrefix + "Ungueltiger Befehl. Bitte alle Parameter angeben!");            
          }
       }
 
