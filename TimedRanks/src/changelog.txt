@@ -1,5 +1,15 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
+V. 1.3.0
+- added /tr help command to display help
+
+V. 1.2.0
+- added command /tr delete PLAYER to delete a player from the promotion
+list withour any checks. This may be needed if a players rank has been
+modified outside of TR to an unmanaged rank.
+- improved and fixed some user messages
+- fixed logic of check if player is demotable or promotable
+
 V. 1.1.1
 - fixed missing demotion on "pause" command and missing promotion on "resume" command
 

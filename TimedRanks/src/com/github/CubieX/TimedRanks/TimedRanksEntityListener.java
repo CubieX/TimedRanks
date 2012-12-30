@@ -1,9 +1,5 @@
 package com.github.CubieX.TimedRanks;
 
-import java.util.Calendar;
-import java.util.List;
-import java.util.logging.Logger;
-
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 

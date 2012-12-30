@@ -3,6 +3,8 @@ package com.github.CubieX.TimedRanks;
 import java.util.Set;
 
 import net.milkbowl.vault.permission.Permission;
+
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -174,10 +176,55 @@ public class TimedRanksCommandHandler implements CommandExecutor
 
                return true;
             }
+
+            // DISPLAY HELP Page 1 (Page 2 is in "2 Parameters" section!)
+            if ((args[0].equalsIgnoreCase("help")) || (args[0].equalsIgnoreCase("hilfe")))
+            {
+               String[] messages = {
+                     "------------------------",
+                     ChatColor.GREEN + "TimedRanks - Hilfe",
+                     "------------------------",
+                     "/vip version - Version anzeigen.",
+                     ChatColor.RED + "/vip reload - Configs neu laden",
+                     "/vip status|info" + ChatColor.RED + " [SPIELER]" + ChatColor.WHITE + " - Ernennungsstatus anzeigen.",
+                     ChatColor.RED + "/vip list|liste - Liste - Liste aller VIPs.",
+                     "/vip promote SPIELER TAGE - Spieler zum VIP machen",
+                     "/vip demote SPIELER - Spieler in alte Gruppe zurueckstufen",
+                     "/vip add|gib SPIELER TAGE - Tage im VIP-Rank hinzufuegen",
+                     ChatColor.YELLOW + "/vip hilfe 2" + ChatColor.GRAY + " fuer 2. Seite."
+               };
+               
+               sender.sendMessage(messages);
+
+               return true;
+            }
          }
 
          if (args.length == 2)
          {
+            // DISPLAY HELP Page 2 (Page 1 is in "1 Parameters" section!)
+            if ((args[0].equalsIgnoreCase("help")) || (args[0].equalsIgnoreCase("hilfe")))
+            {
+               if((null != args[1]) &&
+                     (args[1].equals("2")))
+               {
+                  String[] messages = {
+                        "-------------------------------",
+                        ChatColor.GREEN + "TimedRanks - Hilfe - Seite 2",
+                        "-------------------------------",
+                        "/vip sub|nimm SPIELER TAGE - Tage im VIP-Rang abziehen",
+                        "/vip pause SPIELER - VIP-Ernennung pausieren",
+                        "/vip resume SPIELER - VIP-Ernennung weiterlaufen lassen",
+                        ChatColor.RED + "/vip pay|zahle SPIELER - Spieler sofort auszahlen",
+                        ChatColor.RED + "/vip del|delete|loesche SPIELER - Spieler aus Liste loeschen"
+                  };
+                  
+                  sender.sendMessage(messages);
+
+                  return true;
+               }
+            }
+
             // SHOW OTHER PLAYERS PROMOTION STATUS
             if ((args[0].equalsIgnoreCase("status")) || (args[0].equalsIgnoreCase("info"))) // show the status of the given player
             {
@@ -496,7 +543,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      {
                         World nullWorld = null;
                         String primaryGroup = perm.getPrimaryGroup(nullWorld, playersNameToDemote);
-                        
+
                         if(sender instanceof Player)
                         {
                            sender.sendMessage(TimedRanks.logPrefix + "Dieser Spieler ist " + ChatColor.GREEN + primaryGroup + ChatColor.WHITE + " und momentan nicht ueber " + plugin.getDescription().getName() + " in einen hoeheren Rang ernannt.");
@@ -528,7 +575,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             }
 
             // PAY PLAYER BEFORE DUE DATE (this will postpone the next payment accordingly by one payment interval!)
-            if (args[0].equalsIgnoreCase("pay"))
+            if ((args[0].equalsIgnoreCase("pay")) || (args[0].equalsIgnoreCase("zahle")))
             {                 
                if(sender.hasPermission("timedranks.admin"))
                {
@@ -595,7 +642,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      {
                         World nullWorld = null;
                         String primaryGroup = perm.getPrimaryGroup(nullWorld, playersNameToPay);
-                        
+
                         if(sender instanceof Player)
                         {
                            sender.sendMessage(TimedRanks.logPrefix + "Dieser Spieler ist " + ChatColor.GREEN + primaryGroup + ChatColor.WHITE + " und momentan nicht ueber " + plugin.getDescription().getName() + " in einen hoeheren Rang ernannt.");
