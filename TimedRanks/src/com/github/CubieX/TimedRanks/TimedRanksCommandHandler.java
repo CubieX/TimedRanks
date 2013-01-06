@@ -181,16 +181,16 @@ public class TimedRanksCommandHandler implements CommandExecutor
             if ((args[0].equalsIgnoreCase("help")) || (args[0].equalsIgnoreCase("hilfe")))
             {
                String[] messages = {
-                     "------------------------",
-                     ChatColor.GREEN + "TimedRanks - Hilfe",
-                     "------------------------",
-                     "/vip version - Version anzeigen.",
-                     ChatColor.RED + "/vip reload - Configs neu laden",
-                     "/vip status|info" + ChatColor.RED + " [SPIELER]" + ChatColor.WHITE + " - Ernennungsstatus anzeigen.",
-                     ChatColor.RED + "/vip list|liste - Liste - Liste aller VIPs.",
-                     "/vip promote SPIELER TAGE - Spieler zum VIP machen",
-                     "/vip demote SPIELER - Spieler in alte Gruppe zurueckstufen",
-                     "/vip add|gib SPIELER TAGE - Tage im VIP-Rank hinzufuegen",
+                     ChatColor.GREEN + "------------------------\n" + 
+                     "TimedRanks - Hilfe\n" + 
+                     "------------------------\n" + 
+                     "/vip version - Version anzeigen.\n" + 
+                     ChatColor.RED + "/vip reload - Configs neu laden\n" + 
+                     ChatColor.GREEN + "/vip status|info" + ChatColor.RED + " [SPIELER]" + ChatColor.GREEN + " - Ernennungsstatus anzeigen.\n" + 
+                     ChatColor.RED + "/vip list|liste - Liste - Liste aller VIPs.\n" + 
+                     "/vip promote SPIELER TAGE - Spieler zum VIP machen\n" + 
+                     "/vip demote SPIELER - Spieler in alte Gruppe zurueckstufen\n" + 
+                     "/vip add|gib SPIELER TAGE - Tage im VIP-Rank hinzufuegen\n" + 
                      ChatColor.YELLOW + "/vip hilfe 2" + ChatColor.GRAY + " fuer 2. Seite."
                };
                
@@ -209,14 +209,14 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      (args[1].equals("2")))
                {
                   String[] messages = {
-                        "-------------------------------",
-                        ChatColor.GREEN + "TimedRanks - Hilfe - Seite 2",
-                        "-------------------------------",
-                        "/vip sub|nimm SPIELER TAGE - Tage im VIP-Rang abziehen",
-                        "/vip pause SPIELER - VIP-Ernennung pausieren",
-                        "/vip resume SPIELER - VIP-Ernennung weiterlaufen lassen",
-                        ChatColor.RED + "/vip pay|zahle SPIELER - Spieler sofort auszahlen",
-                        ChatColor.RED + "/vip del|delete|loesche SPIELER - Spieler aus Liste loeschen"
+                        ChatColor.GREEN + "-------------------------------\n" + 
+                        "TimedRanks - Hilfe - Seite 2\n" + 
+                        "-------------------------------\n" + 
+                        ChatColor.RED + "/vip sub|nimm SPIELER TAGE - Tage im VIP-Rang abziehen\n" + 
+                        "/vip pause SPIELER - VIP-Ernennung pausieren\n" + 
+                        "/vip resume SPIELER - VIP-Ernennung weiterlaufen lassen\n" + 
+                        "/vip pay|zahle SPIELER - Spieler sofort auszahlen\n" + 
+                        "/vip del|delete|loesche SPIELER - Spieler aus Liste loeschen"
                   };
                   
                   sender.sendMessage(messages);

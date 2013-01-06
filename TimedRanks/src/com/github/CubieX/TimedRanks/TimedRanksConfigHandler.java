@@ -22,7 +22,7 @@ public class TimedRanksConfigHandler
    {        
       this.plugin = plugin;
 
-      initConfig();        
+      initConfig();
    }
 
    private void initConfig()

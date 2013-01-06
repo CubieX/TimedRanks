@@ -193,6 +193,7 @@ public class TimedRanks extends JavaPlugin
       eListener = null;
       econ = null;
       perm = null;
+      plugin = null;
       log.info(getDescription().getName() + " version " + getDescription().getVersion() + " is disabled!");
    }
 

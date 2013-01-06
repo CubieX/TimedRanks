@@ -1,13 +1,13 @@
-# do NOT change the config version!
+# do NOT change the config version.
 config_version: '1'
-# set locale for user dialog messages
+# set locale for user dialog messages.
 language: de
-# enable debug output
+# enable debug output.
 debug: false
-# Group definitions are going here. Order is mandatory!
+# Group definitions are going here. Order is mandatory.
 # 1st basegroup is matched with 1st promotegroup.
 # 2nd basegroup is matched with 2nd promotegroup and so on.
-# Both groups MUST be equal length!
+# Both groups MUST be equal length.
 basegroups:
   - Member
   - Supporter
@@ -18,7 +18,7 @@ promotegroups:
   - VIPSupporter
   - VIPModerator
   - VIPDesigner
-# members of the following groups will receive regular payments
+# members of the following groups will receive regular payments.
 # interval may be between 1 and 365.
 # amount may be between 0.01 and 1000000.00
 payedgroups:
@@ -28,18 +28,18 @@ payedgroups:
   VIPModerator:
     interval: 30
     amount: 1000.00
-# Which currency do you use on your server? (e.g. '$' or '§' or 'Coins')
+# Currency used on the server
 currencysymbol: '$'
-#
-# Message section [GERMAN]
+# 
+# Message section - GERMAN
 DE_STATUSMESSAGE_VALID: Du hast noch {0} Tage als {1} uebrig.
 DE_STATUSMESSAGE_INVALID: Du hast zur Zeit keinen {0} Status.
 DE_PROMOTIONMESSAGE: Du wurdest fuer {0} Tage zum {1} ernannt.
 DE_DEMOTIONMESSAGE_AUTO_1: Deine Zeit als {0} ist abgelaufen.
 DE_DEMOTIONMESSAGE_AUTO_2: Du wurdest in die Gruppe {0} zurueckgestuft.
 DE_DEMOTIONMESSAGE_MANUAL: Du wurdest automatisch vom {0} zum {1} zureckgestuft.
-#
-# Message section [ENGLISH]
+# 
+# Message section - ENGLISH
 EN_STATUSMESSAGE_VALID: You have {0} days left as {1}.
 EN_STATUSMESSAGE_INVALID: You currently do not have {0} VIP status.
 EN_DEMOTIONMESSAGE_AUTO_1: Your time as {0} has expired.
