@@ -1,5 +1,11 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
+V.1.3.3
+- showing the list of all promoted players now uses the "timedranks.status.other" permission instead of .admin
+- BugFix: promotion of a player does no longer automaticly execute a payment
+- BugFix: Fixed time factor for promotion duration calculation (promotions were hours instead of days)
+- added german "weiter" as alternative for /tr resume command
+
 V. 1.3.1
 - fixed help page display
 - fixed some invalid entries/formatting issues in the config on Linux systems

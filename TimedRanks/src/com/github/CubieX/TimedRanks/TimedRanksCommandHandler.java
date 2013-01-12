@@ -107,7 +107,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             // SHOW A LIST OF ALL CURRENTLY PROMOTED PLAYERS
             if (args[0].equalsIgnoreCase("list") || args[0].equalsIgnoreCase("liste"))
             { 
-               if(sender.hasPermission("timedranks.admin"))
+               if(sender.hasPermission("timedranks.status.other"))
                {
                   int countAll = 0;
                   int countActive = 0;
@@ -148,7 +148,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
 
                      if(sender instanceof Player)
                      {
-                        sender.sendMessage(ChatColor.GREEN + name + ChatColor.WHITE + ": Expires in " + ChatColor.YELLOW + daysLeft + ChatColor.WHITE + " days. Status: " + status);
+                        sender.sendMessage(ChatColor.GREEN + name + ChatColor.WHITE + ": Laeuft ab in " + ChatColor.YELLOW + daysLeft + ChatColor.WHITE + " Tagen. Status: " + status);
                      }
                      else
                      {
@@ -214,7 +214,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                         "-------------------------------\n" + 
                         ChatColor.RED + "/vip sub|nimm SPIELER TAGE - Tage im VIP-Rang abziehen\n" + 
                         "/vip pause SPIELER - VIP-Ernennung pausieren\n" + 
-                        "/vip resume SPIELER - VIP-Ernennung weiterlaufen lassen\n" + 
+                        "/vip resume|weiter SPIELER - VIP-Ernennung weiterlaufen lassen\n" + 
                         "/vip pay|zahle SPIELER - Spieler sofort auszahlen\n" + 
                         "/vip del|delete|loesche SPIELER - Spieler aus Liste loeschen"
                   };
@@ -387,7 +387,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             }                
 
             // RESUME PROMOTION OF A PLAYER
-            if (args[0].equalsIgnoreCase("resume")) // resume the promoted rank, adding the suspended time to the end timestamp and next payment time
+            if (args[0].equalsIgnoreCase("resume") || args[0].equalsIgnoreCase("weiter")) // resume the promoted rank, adding the suspended time to the end timestamp and next payment time
             {            
                if(sender.hasPermission("timedranks.manage"))
                {

@@ -349,7 +349,7 @@ public class TimedRanks extends JavaPlugin
             long currTime = ((Calendar)Calendar.getInstance()).getTimeInMillis();
             long promotionEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".endTime");
 
-            timeLeft = "< " + String.valueOf(((promotionEndTime - currTime) / 3600L / 1000L) + 1);            
+            timeLeft = "< " + String.valueOf(((promotionEndTime - currTime) / 1000L / 3600L / 24L) + 1);            
          }
 
          return (timeLeft);
@@ -379,7 +379,7 @@ public class TimedRanks extends JavaPlugin
          return (res);
       }
 
-      public Boolean addPlayerToPromotionList(String playerName, long promotionTimeInDays, String promoteGroup)
+      public Boolean addPlayerToPromotionList(String playerName, int promotionTimeInDays, String promoteGroup)
       {
          Boolean success = false;
 
@@ -387,17 +387,15 @@ public class TimedRanks extends JavaPlugin
                (!promoteGroup.equals("")) &&
                (0 < promotionTimeInDays))
          {
-            long promotionEndTime = (promotionTimeInDays * 3600 * 1000) + ((Calendar)Calendar.getInstance()).getTimeInMillis();        
+            long currTime = ((Calendar)Calendar.getInstance()).getTimeInMillis();
+            long promotionEndTime = currTime + (promotionTimeInDays * 24L * 3600L * 1000L);
             cHandler.getPromotedPlayersConfig().set("players." + playerName + ".endTime", promotionEndTime);
 
             if(playerIsInPayedGroup(playerName)) // add payment Node if player is in payed group
             {
-               if(payPlayer(playerName)) // make first payment
-               {
                   // schedule next payment
-                  long nextPaymentTime = (((Calendar)Calendar.getInstance()).getTimeInMillis() + (getPaymentInterval(promoteGroup) * 3600 * 1000));
-                  cHandler.getPromotedPlayersConfig().set("players." + playerName + ".nextPayment", nextPaymentTime);
-               }
+                  long nextPaymentTime = currTime + (getPaymentInterval(promoteGroup) * 24L * 3600L * 1000L);
+                  cHandler.getPromotedPlayersConfig().set("players." + playerName + ".nextPayment", nextPaymentTime);               
             }
 
             cHandler.getPromotedPlayersConfig().set("players." + playerName + ".status", "active");
@@ -485,7 +483,7 @@ public class TimedRanks extends JavaPlugin
             if((0 < days) &&
                   (days < 10000)) // to prevent unrealistic values
             {
-               long newEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".endTime") + (days * 3600 * 1000);
+               long newEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".endTime") + (days * 24L * 3600L * 1000L);
 
                cHandler.getPromotedPlayersConfig().set("players." + playerName + ".endTime", newEndTime);
                cHandler.savePromotedPlayersConfig();
@@ -504,7 +502,7 @@ public class TimedRanks extends JavaPlugin
          {
             if(0 < days)
             {            
-               long newEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".endTime") - (days * 3600 * 1000);
+               long newEndTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".endTime") - (days * 24L * 3600L * 1000L);
 
                // promotion time may only be reduced up to the present time. But not into the past.
                if(newEndTime < ((Calendar)Calendar.getInstance()).getTimeInMillis())
@@ -537,7 +535,7 @@ public class TimedRanks extends JavaPlugin
             if(cHandler.getPromotedPlayersConfig().contains("players." + playerName + ".nextPayment")) 
             {
                nextPaymentTime = cHandler.getPromotedPlayersConfig().getLong("players." + playerName + ".nextPayment");
-               timeLeft = "< " + String.valueOf(((nextPaymentTime - currTime) / 3600L / 1000L) + 1);
+               timeLeft = "< " + String.valueOf(((nextPaymentTime - currTime) / 1000L / 3600L / 24L) + 1);
             }
             else
             { // player is in payed group, but this was not done via TR. So ignore Payment.
@@ -562,7 +560,7 @@ public class TimedRanks extends JavaPlugin
 
                if(currTime > nextPaymentTime)
                {               
-                  res = true;           
+                  res = true;
                }
             }
          }
@@ -680,7 +678,7 @@ public class TimedRanks extends JavaPlugin
          if((null != playerName) &&
                (null != promoteGroup))
          {
-            long nextPaymentTime = (((Calendar)Calendar.getInstance()).getTimeInMillis() + (getPaymentInterval(promoteGroup) * 3600 * 1000));
+            long nextPaymentTime = (((Calendar)Calendar.getInstance()).getTimeInMillis() + (getPaymentInterval(promoteGroup) * 24L * 3600L * 1000L));
             cHandler.getPromotedPlayersConfig().set("players." + playerName + ".nextPayment", nextPaymentTime);
             cHandler.savePromotedPlayersConfig();
             success = true;
