@@ -114,7 +114,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                   int countPaused = 0;
                   String status = "READ ERROR";
                   String daysLeft = "READ_ERROR";                     
-                  Set<String> promotedPlayersList = cHandler.getPromotedPlayersConfig().getConfigurationSection("players").getKeys(false);
+                  Set<String> promotedPlayersList = cHandler.getPromotedPlayersFile().getConfigurationSection("players").getKeys(false);
 
                   if(sender instanceof Player)
                   {

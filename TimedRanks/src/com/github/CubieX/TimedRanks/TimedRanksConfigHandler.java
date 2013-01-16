@@ -27,12 +27,14 @@ public class TimedRanksConfigHandler
 
    private void initConfig()
    {
+      // plugin config
       plugin.saveDefaultConfig(); //creates a copy of the provided config.yml in the plugins data folder, if it does not exist
       config = plugin.getConfig(); //re-reads config out of memory. (Reads the config from file only, when invoked the first time!)
 
-      reloadPromotedPlayersConfig(); // load file from disk and create objects      
-      savePromotedPlayersDefaultConfig(); // creates a copy of the provided promotedPlayers.yml
-      promoPlayersCfg = getPromotedPlayersConfig(); // re-reads custom config from disk
+      // promoted players list
+      reloadPromotedPlayersFile(); // load file from disk and create objects      
+      savePromotedPlayersDefaultFile(); // creates a copy of the provided promotedPlayers.yml
+      promoPlayersCfg = getPromotedPlayersFile(); // re-reads promotedPlayers file from mem or disk 
    }
 
    private void saveConfig() //saves the config to disc (needed when entries have been altered via the plugin in-game)
@@ -47,7 +49,7 @@ public class TimedRanksConfigHandler
       plugin.reloadConfig();
       config = plugin.getConfig(); // new assignment neccessary when returned value is assigned to a variable or static field(!)
       
-      reloadPromotedPlayersConfig();
+      reloadPromotedPlayersFile();          
 
       sender.sendMessage(ChatColor.GREEN + plugin.getDescription().getName() + " " + plugin.getDescription().getVersion() + " reloaded!");       
    }
@@ -57,7 +59,7 @@ public class TimedRanksConfigHandler
    // =====================================
 
    // reload from disk
-   public void reloadPromotedPlayersConfig()
+   public void reloadPromotedPlayersFile()
    {
       if (promotedPlayersConfigFile == null)
       {
@@ -75,17 +77,17 @@ public class TimedRanksConfigHandler
    }
 
    // reload config and return it
-   public FileConfiguration getPromotedPlayersConfig()
+   public FileConfiguration getPromotedPlayersFile()
    {
       if (promoPlayersCfg == null)
       {
-         this.reloadPromotedPlayersConfig();
+         this.reloadPromotedPlayersFile();
       }
       return promoPlayersCfg;
    }
 
    //save config
-   public void savePromotedPlayersConfig()
+   public void savePromotedPlayersFile()
    {
       if (promoPlayersCfg == null || promotedPlayersConfigFile == null)
       {
@@ -93,7 +95,7 @@ public class TimedRanksConfigHandler
       }
       try 
       {
-         getPromotedPlayersConfig().save(promotedPlayersConfigFile);
+         getPromotedPlayersFile().save(promotedPlayersConfigFile);
       }
       catch (IOException ex)
       {
@@ -103,12 +105,12 @@ public class TimedRanksConfigHandler
    }
 
    // safe a default config if there is no file present
-   public void savePromotedPlayersDefaultConfig()
+   public void savePromotedPlayersDefaultFile()
    {
       if (!promotedPlayersConfigFile.exists())
       {            
          this.plugin.saveResource(promotedPlayersFileName, false);
       }
-   }
-
+   }     
+   
 }
