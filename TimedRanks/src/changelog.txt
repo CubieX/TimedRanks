@@ -1,5 +1,8 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
+V1.4.1
+- fixed config reload mechanism
+
 V.1.4.0
 - added File logger for transactions
 

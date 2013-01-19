@@ -47,9 +47,11 @@ public class TimedRanksConfigHandler
    public void reloadConfig(CommandSender sender)
    {
       plugin.reloadConfig();
-      config = plugin.getConfig(); // new assignment neccessary when returned value is assigned to a variable or static field(!)
+      config = plugin.getConfig(); // new assignment necessary when returned value is assigned to a variable or static field(!)
       
-      reloadPromotedPlayersFile();          
+      reloadPromotedPlayersFile();
+      
+      plugin.readConfigValues();
 
       sender.sendMessage(ChatColor.GREEN + plugin.getDescription().getName() + " " + plugin.getDescription().getVersion() + " reloaded!");       
    }

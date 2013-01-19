@@ -1,6 +1,5 @@
 package com.github.CubieX.TimedRanks;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -171,7 +170,7 @@ public class TimedRanks extends JavaPlugin
       return (perm != null);
    }
 
-   private void readConfigValues()
+   public void readConfigValues()
    {
       debug = plugin.getConfig().getBoolean("debug");
       baseGroupList = plugin.getConfig().getStringList("basegroups");
