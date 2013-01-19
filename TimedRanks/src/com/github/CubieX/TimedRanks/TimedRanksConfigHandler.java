@@ -11,8 +11,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 public class TimedRanksConfigHandler
 {
    private final TimedRanks plugin;
-
-   private FileConfiguration config;
    private FileConfiguration promoPlayersCfg = null;
    private File promotedPlayersConfigFile = null;
    private final String promotedPlayersFileName = "promotedPlayers.yml";
@@ -29,7 +27,7 @@ public class TimedRanksConfigHandler
    {
       // plugin config
       plugin.saveDefaultConfig(); //creates a copy of the provided config.yml in the plugins data folder, if it does not exist
-      config = plugin.getConfig(); //re-reads config out of memory. (Reads the config from file only, when invoked the first time!)
+      plugin.getConfig(); //re-reads config out of memory. (Reads the config from file only, when invoked the first time!)
 
       // promoted players list
       reloadPromotedPlayersFile(); // load file from disk and create objects      
@@ -37,17 +35,11 @@ public class TimedRanksConfigHandler
       promoPlayersCfg = getPromotedPlayersFile(); // re-reads promotedPlayers file from mem or disk 
    }
 
-   private void saveConfig() //saves the config to disc (needed when entries have been altered via the plugin in-game)
-   {
-      // get and set values here!
-      plugin.saveConfig();   
-   }
-
    //reloads the config from disc (used if user made manual changes to the config.yml file)
    public void reloadConfig(CommandSender sender)
    {
       plugin.reloadConfig();
-      config = plugin.getConfig(); // new assignment necessary when returned value is assigned to a variable or static field(!)
+      plugin.getConfig(); // new assignment necessary when returned value is assigned to a variable or static field(!)
       
       reloadPromotedPlayersFile();
       
@@ -111,8 +103,7 @@ public class TimedRanksConfigHandler
    {
       if (!promotedPlayersConfigFile.exists())
       {            
-         this.plugin.saveResource(promotedPlayersFileName, false);
+         plugin.saveResource(promotedPlayersFileName, false);
       }
-   }     
-   
+   }   
 }

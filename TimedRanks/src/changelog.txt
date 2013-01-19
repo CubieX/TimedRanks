@@ -1,6 +1,10 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
-V1.4.1
+V.1.4.2
+- performed some code cleanup
+- some minor improvements of internal mechanics
+
+V.1.4.1
 - fixed config reload mechanism
 
 V.1.4.0

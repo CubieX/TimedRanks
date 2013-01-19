@@ -1,8 +1,6 @@
 package com.github.CubieX.TimedRanks;
 
-import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -14,15 +12,13 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 public class TimedRanksEntityListener implements Listener
 {
-   private final TimedRanks plugin;
-   private final Economy econ; 
+   private final TimedRanks plugin; 
    private final Permission perm;
 
    //Constructor
-   public TimedRanksEntityListener(TimedRanks plugin, Economy econ, Permission perm)
+   public TimedRanksEntityListener(TimedRanks plugin, Permission perm)
    {
       this.plugin = plugin;
-      this.econ = econ;
       this.perm = perm;
 
       plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -66,7 +62,7 @@ They are called in the following order
          Bukkit.getScheduler().runTaskLater(plugin, new Runnable()
          {
             public void run()
-            { // TODO Statt beim Login das ganze Zyklisch abprüfen alle paar Stunden? Damit die Liste immer aktuell ist?
+            { // TODO Statt beim Login das ganze Zyklisch abpruefen alle paar Stunden? Damit die Liste immer aktuell ist?
                // checks if player is currently promoted via TR and if his promotion time has expired. If yes, he will be demoted.
                // this should always be called BEFORE calling checkPlayerPaymentStatus().
                checkPlayerPromotionStatus(joinedPlayer.getName());
@@ -112,7 +108,7 @@ They are called in the following order
 
                         if(plugin.getServer().getPlayer(playerName).isOnline())
                         {
-                           // TODO hier die Messages aus der Config einfügen!  Auch bei den Fehlermeldungen!                      
+                           // TODO hier die Messages aus der Config einfuegen!  Auch bei den Fehlermeldungen!                      
                            plugin.getServer().getPlayer(playerName).sendMessage(TimedRanks.logPrefix + "Du wurdest vom " + ChatColor.RED + promoteGroup + ChatColor.GRAY + " zum " + ChatColor.GREEN + baseGroup + ChatColor.GRAY + " zurueckgestuft.");
                         }
                      }

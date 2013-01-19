@@ -1,10 +1,7 @@
 package com.github.CubieX.TimedRanks;
 
 import java.util.Set;
-
 import net.milkbowl.vault.permission.Permission;
-
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -29,13 +26,6 @@ public class TimedRanksCommandHandler implements CommandExecutor
    @Override
    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
    {
-      Player sendingPlayer = null;
-
-      if (sender instanceof Player) 
-      {
-         sendingPlayer = (Player) sender;
-      }
-
       if (cmd.getName().equalsIgnoreCase("tr"))
       { // If the player typed /tr then do the following... (can be run from console also)
          if (args.length == 0)
@@ -506,7 +496,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                               {
                                  if(plugin.getServer().getPlayer(playersNameToDemote).isOnline())
                                  {
-                                    // TODO hier die Messages aus der Config einfügen!  Auch bei den Fehlermeldungen!                      
+                                    // TODO hier die Messages aus der Config einfuegen!  Auch bei den Fehlermeldungen!                      
                                     plugin.getServer().getPlayer(playersNameToDemote).sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Du wurdest vom " + ChatColor.RED + promoteGroup + ChatColor.WHITE + " zum " + ChatColor.GREEN + baseGroup + ChatColor.WHITE + " zurueckgestuft.");
                                  }
                               }
@@ -614,7 +604,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                                  {
                                     if(plugin.getServer().getPlayer(playersNameToPay).isOnline())
                                     {
-                                       // TODO hier die Messages aus der Config einfügen!  Auch bei den Fehlermeldungen!                      
+                                       // TODO hier die Messages aus der Config einfuegen!  Auch bei den Fehlermeldungen!                      
                                        plugin.getServer().getPlayer(playersNameToPay).sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Du hast diese Ueberweisung vorzeitig erhalten.");
                                        plugin.getServer().getPlayer(playersNameToPay).sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Die naechste wird entsprechend verschoben.");
                                     }
@@ -766,7 +756,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                               {
                                  plugin.addPlayerToPromotionList(playersNameToPromote, daysToPromote, promoteGroup);
                                  // TODO Pay a player immediately for the first time after promotion? -> Could be dangerous when players are promoted in short succession...
-                                 // They will every time get payed. Currently, this will not be implemented!
+                                 // They will every time get payed. Currently, this will not be implemented! Perharps with additional "pay" parameter like /tr promote PLAYER pay
                                  TimedRanks.log.info(TimedRanks.logPrefix + playersNameToPromote + " was promoted to rank: " + promoteGroup + " from " + sender.getName() + " for " + daysToPromote + " days.");
 
                                  if(sender instanceof Player)
@@ -778,7 +768,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                                  {
                                     if(plugin.getServer().getPlayer(playersNameToPromote).isOnline())
                                     {
-                                       // TODO hier die Messages aus der Config einfügen!  Auch bei den Fehlermeldungen!   
+                                       // TODO hier die Messages aus der Config einfuegen!  Auch bei den Fehlermeldungen!   
                                        plugin.getServer().getPlayer(playersNameToPromote).sendMessage(TimedRanks.logPrefix + "Du wurdest fuer " + ChatColor.GREEN + daysToPromote + ChatColor.WHITE + " Tage zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " ernannt.");
                                     }
                                  }
