@@ -12,7 +12,7 @@ basegroups:
   - Member
   - Supporter
   - Moderator
-  - Designer
+  - ModDesigner
 promotegroups:
   - VIP
   - VIPSupporter
@@ -26,6 +26,9 @@ payedgroups:
     interval: 30
     amount: 1000.00
   VIPModerator:
+    interval: 30
+    amount: 1000.00
+  VIPDesigner:
     interval: 30
     amount: 1000.00
 # Currency used on the server
