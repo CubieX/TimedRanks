@@ -396,7 +396,7 @@ public class TimedRanks extends JavaPlugin
          }
 
          cHandler.getPromotedPlayersFile().set("players." + playerName + ".status", "active");
-         cHandler.getPromotedPlayersFile();
+         cHandler.savePromotedPlayersFile();
          success = true;
       }
 
@@ -408,7 +408,7 @@ public class TimedRanks extends JavaPlugin
       if(playerIsOnPromotionList(playerName))
       {
          cHandler.getPromotedPlayersFile().set("players." + playerName, null);
-         cHandler.getPromotedPlayersFile();
+         cHandler.savePromotedPlayersFile();
       }
    }
 
@@ -429,7 +429,7 @@ public class TimedRanks extends JavaPlugin
             {
                cHandler.getPromotedPlayersFile().set("players." + playerName + ".status", "paused");         
                cHandler.getPromotedPlayersFile().set("players." + playerName + ".pauseTime", getCurrentTimeInMillis());         
-               cHandler.getPromotedPlayersFile();
+               cHandler.savePromotedPlayersFile();
                success = true;   
             }
          }

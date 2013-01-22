@@ -1,5 +1,8 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
+V.1.4.3
+- fixed saving of promotedPlayers.yml when adding, deleting or pausing a promotion
+
 V.1.4.2
 - performed some code cleanup
 - some minor improvements of internal mechanics

@@ -93,7 +93,7 @@ public class TimedRanksConfigHandler
       }
       catch (IOException ex)
       {
-         TimedRanks.log.severe("Could not save config to " + promotedPlayersConfigFile);
+         TimedRanks.log.severe("Could not save data to " + promotedPlayersConfigFile);
          TimedRanks.log.severe(ex.getMessage());
       }
    }
