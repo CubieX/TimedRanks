@@ -182,7 +182,8 @@ public class TimedRanks extends JavaPlugin
 
    @Override
    public void onDisable()
-   {       
+   {
+      cHandler.savePromotedPlayersFile();
       getServer().getScheduler().cancelTasks(this); // cancels ALL scheduler tasks of TR
       //schedHandler = null;
       cHandler = null;       
