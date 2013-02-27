@@ -172,7 +172,7 @@ public class TimedRanks extends JavaPlugin
    
    public long getCurrentTimeInMillis()
    {
-      return ((Calendar)Calendar.getInstance()).getTimeInMillis();
+      return (((Calendar)Calendar.getInstance()).getTimeInMillis());
    }
 
    void disablePlugin()

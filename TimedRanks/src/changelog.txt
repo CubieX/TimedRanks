@@ -1,5 +1,9 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
+V1.4.5
+- minor correction, not affecting functionality
+- changed default config by adding two new groups
+
 V1.4.4
 - added save command on plugin disable
 
