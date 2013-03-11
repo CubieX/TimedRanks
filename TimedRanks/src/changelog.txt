@@ -1,5 +1,10 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
+V1.5.0
+- added message on login for OPs and the player if he is managed via TimedRanks but currently NOT
+  in the managed group he should be in. Hence he has been set to another permission group outside of TR.
+  Also a mail is sent to every OP if Essentials plugin is present.
+
 V1.4.5
 - minor correction, not affecting functionality
 - changed default config by adding two new groups

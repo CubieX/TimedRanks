@@ -3,6 +3,7 @@ package com.github.CubieX.TimedRanks;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -66,9 +67,17 @@ They are called in the following order
                // checks if player is currently promoted via TR and if his promotion time has expired. If yes, he will be demoted.
                // this should always be called BEFORE calling checkPlayerPaymentStatus().
                checkPlayerPromotionStatus(joinedPlayer.getName());
+
                // checks if the player is in a payed group and if his next payment is due. If yes, he will be payed and the
                // next payment time will be scheduled.
                checkPlayerPaymentStatus(joinedPlayer.getName());
+
+               // checks if a player who is managed by TR is currently in the permission group matching his base- or promoteGroup
+               // if not, he has been set to another group by using the permission system before demoting or deleting him from the promotionList.
+               // If this is the case, he and all OPs will be informed every time he loggs in, because
+               // his group should be changed to his promoteGroup (if promotion is active), baseGroup (if promotion is paused) -> shown by /vip status PLAYER
+               // or he should be demoted or deleted from the list
+               checkPlayerGroupStatus(joinedPlayer);
             }
          }, 20*5L); // 5 second delay to give BukkitPermissions time to register joined players permissions         
       }
@@ -151,6 +160,37 @@ They are called in the following order
                }
             }
          }
+      }
+   }
+
+   public void checkPlayerGroupStatus(Player joinedPlayer)
+   {      
+      if(!plugin.checkPlayerGroupStatus(joinedPlayer))
+      {
+         joinedPlayer.sendMessage(ChatColor.YELLOW + TimedRanks.logPrefix + "Du bist in einen hoeheren Rang ernannt, aber momentan nicht in der dazu passenden Gruppe.\n" + 
+               ChatColor.YELLOW + "Bitte melde das einem Admin! (z.B. per Ticket oder im Forum)");
+
+         for(Player operator : plugin.getServer().getOnlinePlayers())
+         {
+            if(operator.isOp())
+            {
+               operator.sendMessage(ChatColor.YELLOW + TimedRanks.logPrefix + joinedPlayer.getName() + " ist gemanaged ueber " + plugin.getDescription().getName() + ", aber ist momentan nicht in der dazu passenden Gruppe!");                              
+            }
+         }
+
+         for(OfflinePlayer offlineOperator : plugin.getServer().getOperators())
+         {
+            if(offlineOperator.isOp())
+            {
+               // send all OPs a mail if Essentials plugin is present
+               if(null != plugin.getServer().getPluginManager().getPlugin("Essentials"))
+               {
+                  plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "mail send " + offlineOperator.getName() + " AUTOMESSAGE [TimedRanks]: " + joinedPlayer.getName() + " ist ueber TR gemanaged, aber momentan in einer falschen Gruppe. Bitte ueberpruefen!");
+               }
+            }
+         }
+
+         TimedRanks.log.info(TimedRanks.logPrefix + joinedPlayer.getName() + " is managed via " + plugin.getDescription().getName() + " but is currently NOT in the matching permission group!");
       }
    }
 }

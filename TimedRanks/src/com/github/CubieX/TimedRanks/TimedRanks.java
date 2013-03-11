@@ -169,7 +169,7 @@ public class TimedRanks extends JavaPlugin
       promoteGroupList = plugin.getConfig().getStringList("promotegroups");
       currency = plugin.getConfig().getString("currencysymbol");
    }
-   
+
    public long getCurrentTimeInMillis()
    {
       return (((Calendar)Calendar.getInstance()).getTimeInMillis());
@@ -307,6 +307,61 @@ public class TimedRanks extends JavaPlugin
                }
             }
          }
+      }
+
+      return (res);
+   }
+
+   public Boolean checkPlayerGroupStatus(Player player)
+   {
+      World nullWorld = null;
+      Boolean res = false;
+
+      if(playerIsOnPromotionList(player.getName())) // is player managed via TimedRanks?
+      {
+         String primaryGroup = perm.getPrimaryGroup(nullWorld, player.getName());
+
+         // check if he is currently in the permission group matching his current promoteGroup
+         // if not, he has been set to another group directly via the permission plugin WITHOUT demoting him beforehand.
+         // so he might not have all permissions of the promoteGroup and therefore needs to be set to his proper promoteGroup (as shown via /vip status PLAYER)
+         // or has to be demoted or deleted from the promotion list
+         if(promotionIsActive(player.getName()))  // is he currently actively promoted in higher rank?
+         {
+            for(int i = 0; i < promoteGroupList.size(); i++)
+            {
+               // Do NOT use playerInGroup() as this seems to also look at derived groups. (e.g. VIP is probably derived from Member)
+               if(primaryGroup.equalsIgnoreCase(promoteGroupList.get(i))) // if players group was found in promoteList
+               {
+                  // if player is in promoteGroup, is on the list and his promotion is active, he is demotable
+                  res = true;
+                  break;
+               }
+            }
+         }
+         else // player is on promotion list but his promotion is currently paused
+         {
+            // check if he is currently in the permission group matching his current baseGroup
+            // if not, he has been set to another group directly via the permission plugin WITHOUT deleting him from the promotion list beforehand.
+            // so he needs to be set to his proper baseGroup (as shown via /vip status PLAYER) to regain a managed rank,
+            // or has to be deleted from the promotion list
+            if(!promotionIsActive(player.getName()))
+            {
+               for(int i = 0; i < baseGroupList.size(); i++)
+               {
+                  // Do NOT use playerInGroup() as this seems to also look at derived groups. (e.g. VIP is probably derived from Member)
+                  if(primaryGroup.equalsIgnoreCase(baseGroupList.get(i))) // if players group was found in baseList
+                  {
+                     res = true;
+                     break;
+                  }
+               }
+            }
+         }
+      }
+      else
+      {
+         // player is not on promotion list, so ther can be no wrong group as he is not managed by TimedRanks
+         res = true;
       }
 
       return (res);
@@ -502,7 +557,7 @@ public class TimedRanks extends JavaPlugin
          {            
             long newEndTime = cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".endTime") - (days * 24L * 3600L * 1000L);
             long currTime = getCurrentTimeInMillis();
-            
+
             // promotion time may only be reduced up to the present time. But not into the past.
             if(newEndTime < currTime)
             {
@@ -657,7 +712,7 @@ public class TimedRanks extends JavaPlugin
                //log to file
                fileLogger.logTransaction("[" + logTime + "] " + playerName + " >> " + amount + " " + TimedRanks.currency);
                // =================================================================
-               
+
                if(this.getServer().getOfflinePlayer(playerName).isOnline())
                {
                   Player player = (Player)this.getServer().getOfflinePlayer(playerName);

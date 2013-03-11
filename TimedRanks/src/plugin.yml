@@ -1,8 +1,9 @@
 name: TimedRanks
 main: com.github.CubieX.TimedRanks.TimedRanks
 depend: [Vault]
+author: CubieX
 softdepend: [PermissionsEx, zPermissions, bPermissions, PermissionsBukkit]
-version: 1.4.5
+version: 1.5.0
 description: Automated, timed rank promotion and demotion
 
 commands:
