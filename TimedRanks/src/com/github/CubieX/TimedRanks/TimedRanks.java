@@ -398,9 +398,21 @@ public class TimedRanks extends JavaPlugin
       String timeLeft = "READ ERROR";
 
       if(playerIsOnPromotionList(playerName)) // is player managed via TimedRanks?
-      {
+      {         
          long currTime = getCurrentTimeInMillis();
-         long promotionEndTime = cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".endTime");
+         
+         long promotionEndTime = 0;         
+         
+         if(promotionIsActive(playerName))
+         {
+            promotionEndTime = cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".endTime");
+         }
+         else
+         {
+            // this calculates the end time as if the promotion was resumed now
+            long pausedDuration = currTime - cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".pauseTime");           
+            promotionEndTime = cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".endTime") + pausedDuration;           
+         }
 
          timeLeft = "< " + String.valueOf(((promotionEndTime - currTime) / 1000L / 3600L / 24L) + 1);            
       }
@@ -512,6 +524,7 @@ public class TimedRanks extends JavaPlugin
                // how long was the players promotion paused? Correct the endTime and nextPaymentTime by this value
                long pausedDuration = getCurrentTimeInMillis() - cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".pauseTime");           
                long newEndTime = cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".endTime") + pausedDuration;
+               
                long newNextPaymentTime = cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".nextPayment") + pausedDuration;
 
                cHandler.getPromotedPlayersFile().set("players." + playerName + ".endTime", newEndTime);

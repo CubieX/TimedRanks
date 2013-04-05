@@ -1,5 +1,9 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
+V1.5.1
+- fixed list display. Paused promotions will now display their correct end time,
+  assuming that the promotion would be resumed now.
+  
 V1.5.0
 - added message on login for OPs and the player if he is managed via TimedRanks but currently NOT
   in the managed group he should be in. Hence he has been set to another permission group outside of TR.
