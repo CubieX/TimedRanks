@@ -11,6 +11,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 public class TimedRanksConfigHandler
 {
    private final TimedRanks plugin;
+   private FileConfiguration config = null;
    private FileConfiguration promoPlayersCfg = null;
    private File promotedPlayersConfigFile = null;
    private final String promotedPlayersFileName = "promotedPlayers.yml";
@@ -27,19 +28,24 @@ public class TimedRanksConfigHandler
    {
       // plugin config
       plugin.saveDefaultConfig(); //creates a copy of the provided config.yml in the plugins data folder, if it does not exist
-      plugin.getConfig(); //re-reads config out of memory. (Reads the config from file only, when invoked the first time!)
+      config = plugin.getConfig(); //re-reads config out of memory. (Reads the config from file only, when invoked the first time!)
 
       // promoted players list
       reloadPromotedPlayersFile(); // load file from disk and create objects      
       savePromotedPlayersDefaultFile(); // creates a copy of the provided promotedPlayers.yml
       promoPlayersCfg = getPromotedPlayersFile(); // re-reads promotedPlayers file from mem or disk 
    }
+   
+   public FileConfiguration getConfig()
+   {
+      return (config);
+   }
 
    //reloads the config from disc (used if user made manual changes to the config.yml file)
    public void reloadConfig(CommandSender sender)
    {
       plugin.reloadConfig();
-      plugin.getConfig(); // new assignment necessary when returned value is assigned to a variable or static field(!)
+      config = plugin.getConfig(); // new assignment necessary when returned value is assigned to a variable or static field(!)
       
       reloadPromotedPlayersFile();
       
@@ -69,11 +75,10 @@ public class TimedRanksConfigHandler
          promoPlayersCfg.setDefaults(defConfig);
       }
    }
-
-   // reload config and return it
+   
    public FileConfiguration getPromotedPlayersFile()
    {
-      if (promoPlayersCfg == null)
+      if(null == promoPlayersCfg)
       {
          this.reloadPromotedPlayersFile();
       }
@@ -87,6 +92,7 @@ public class TimedRanksConfigHandler
       {
          return;
       }
+      
       try 
       {
          getPromotedPlayersFile().save(promotedPlayersConfigFile);

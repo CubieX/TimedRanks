@@ -51,7 +51,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                }
                else
                {
-                  sender.sendMessage(ChatColor.RED + "Du hast keine berechtigung um " + plugin.getDescription().getName() + " neu zu laden!");
+                  sender.sendMessage(ChatColor.RED + "Du hast keine Berechtigung um " + plugin.getDescription().getName() + " neu zu laden!");
                }
                return true;
             }

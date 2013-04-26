@@ -9,6 +9,7 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import net.milkbowl.vault.permission.Permission;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -22,7 +23,7 @@ public class TimedRanks extends JavaPlugin
    private TimedRanksFileLogger fileLogger = null;
 
    private TimedRanks plugin;
-   public static final Logger log = Logger.getLogger("Minecraft");
+   public static final Logger log = Bukkit.getServer().getLogger();
    static final String logPrefix = "[TimedRanks] "; // Prefix to go in front of all log entries
    static Economy econ = null;
    static Permission perm = null;
@@ -60,22 +61,22 @@ public class TimedRanks extends JavaPlugin
 
       if (!hookToPermissionSystem())
       {
-         log.info("logPrefix - Disabled due to no superperms compatible permission system found!");
-         getServer().getPluginManager().disablePlugin(this);
+         log.info(logPrefix + "- Disabled due to no superperms compatible permission system found!");
+         disablePlugin();
          return;
       }
 
       if (!setupPermissions())
       {
-         log.info("logPrefix - Disabled because could not hook Vault to permission system!");
-         getServer().getPluginManager().disablePlugin(this);
+         log.info(logPrefix + "- Disabled because could not hook Vault to permission system!");
+         disablePlugin();
          return;
       }
 
       if (!setupEconomy())
       {
-         log.info("logPrefix - Disabled because could not hook Vault to economy system!");
-         getServer().getPluginManager().disablePlugin(this);
+         log.info(logPrefix + "- Disabled because could not hook Vault to economy system!");
+         disablePlugin();
          return;
       }
 
@@ -90,16 +91,16 @@ public class TimedRanks extends JavaPlugin
    }
 
    private boolean checkConfigFileVersion()
-   { // TODO this fails if config files are not present and have to be created for some odd reason...
+   { // TODO this fails if promotedPlayers config file was not present and had to be created. For some odd reason...
       // the config_file: key can not be read from promotedPlayers.yml on first load.
-      // second load with config files present will be successful.
+      // second load will be successful.
       boolean configOK = false;
       boolean resMainConfig = false;
       boolean resPromotedPlayersConfig = false;
 
-      if(this.getConfig().isSet("config_version"))
+      if(cHandler.getConfig().isSet("config_version"))
       {
-         String configVersion = this.getConfig().getString("config_version");
+         String configVersion = cHandler.getConfig().getString("config_version");
 
          if(configVersion.equals(usedConfigVersion))
          {
@@ -164,10 +165,10 @@ public class TimedRanks extends JavaPlugin
 
    public void readConfigValues()
    {
-      debug = plugin.getConfig().getBoolean("debug");
-      baseGroupList = plugin.getConfig().getStringList("basegroups");
-      promoteGroupList = plugin.getConfig().getStringList("promotegroups");
-      currency = plugin.getConfig().getString("currencysymbol");
+      debug = cHandler.getConfig().getBoolean("debug");
+      baseGroupList = cHandler.getConfig().getStringList("basegroups");
+      promoteGroupList = cHandler.getConfig().getStringList("promotegroups");
+      currency = cHandler.getConfig().getString("currencysymbol");
    }
 
    public long getCurrentTimeInMillis()

@@ -2,7 +2,5 @@ Known issues:
 -------------
 
 - only german translation active until now
-- on first load, plugin will fail to load because config file version of plromotedPlayers.yml is not correctly recognized.
-  Workaround: Start the server a second time, so the config files will already be present in your plugin data folder, or
-              copy the config files provided in the download in your plugin data folder before starting the server.
-- help messages may be out of order, because async chat handling messes it up.
+- on first load, plugin will fail to load because config file version of promotedPlayers.yml is not correctly recognized.
+  Workaround: copy the config files provided in the download in your plugin data folder before starting the server.

@@ -1,5 +1,10 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
+V1.5.2
+- minor code improvements
+- changed Logger to new Bukkit-Logger
+- build against CB 1.5.1-R0.2
+
 V1.5.1
 - fixed list display. Paused promotions will now display their correct end time,
   assuming that the promotion would be resumed now.
