@@ -31,9 +31,9 @@ public class TimedRanksConfigHandler
       config = plugin.getConfig(); //re-reads config out of memory. (Reads the config from file only, when invoked the first time!)
 
       // promoted players list
-      reloadPromotedPlayersFile(); // load file from disk and create objects      
+      reloadPromotedPlayersFile(); // load file from disk and create objects
       savePromotedPlayersDefaultFile(); // creates a copy of the provided promotedPlayers.yml
-      promoPlayersCfg = getPromotedPlayersFile(); // re-reads promotedPlayers file from mem or disk 
+      reloadPromotedPlayersFile(); // load config again, now when file is actually present on disk (fix for "first load" error)
    }
    
    public FileConfiguration getConfig()
@@ -44,9 +44,11 @@ public class TimedRanksConfigHandler
    //reloads the config from disc (used if user made manual changes to the config.yml file)
    public void reloadConfig(CommandSender sender)
    {
+      // reload config.yml
       plugin.reloadConfig();
       config = plugin.getConfig(); // new assignment necessary when returned value is assigned to a variable or static field(!)
-      
+
+      // reload promotedPlayers.yml
       reloadPromotedPlayersFile();
       
       plugin.readConfigValues();
@@ -92,15 +94,17 @@ public class TimedRanksConfigHandler
       {
          return;
       }
-      
-      try 
+      else
       {
-         getPromotedPlayersFile().save(promotedPlayersConfigFile);
-      }
-      catch (IOException ex)
-      {
-         TimedRanks.log.severe("Could not save data to " + promotedPlayersConfigFile);
-         TimedRanks.log.severe(ex.getMessage());
+         try
+         {
+            getPromotedPlayersFile().save(promotedPlayersConfigFile);
+         }
+         catch (IOException ex)
+         {
+            TimedRanks.log.severe(TimedRanks.logPrefix + "Could not save data to " + promotedPlayersConfigFile.getName());
+            TimedRanks.log.severe(ex.getMessage());
+         }
       }
    }
 

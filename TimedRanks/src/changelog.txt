@@ -1,24 +1,27 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
-V1.5.2
+V.1.5.3
+- fixed "first load" config creation error for promotedPlayers.yml
+
+V.1.5.2
 - minor code improvements
 - changed Logger to new Bukkit-Logger
 - build against CB 1.5.1-R0.2
 
-V1.5.1
+V.1.5.1
 - fixed list display. Paused promotions will now display their correct end time,
   assuming that the promotion would be resumed now.
   
-V1.5.0
+V.1.5.0
 - added message on login for OPs and the player if he is managed via TimedRanks but currently NOT
   in the managed group he should be in. Hence he has been set to another permission group outside of TR.
   Also a mail is sent to every OP if Essentials plugin is present.
 
-V1.4.5
+V.1.4.5
 - minor correction, not affecting functionality
 - changed default config by adding two new groups
 
-V1.4.4
+V.1.4.4
 - added save command on plugin disable
 
 V.1.4.3

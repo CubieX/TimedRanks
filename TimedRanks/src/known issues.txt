@@ -2,5 +2,4 @@ Known issues:
 -------------
 
 - only german translation active until now
-- on first load, plugin will fail to load because config file version of promotedPlayers.yml is not correctly recognized.
-  Workaround: copy the config files provided in the download in your plugin data folder before starting the server.
+
