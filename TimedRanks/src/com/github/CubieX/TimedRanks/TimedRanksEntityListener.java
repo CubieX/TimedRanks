@@ -118,7 +118,7 @@ They are called in the following order
                         if(plugin.getServer().getPlayer(playerName).isOnline())
                         {
                            // TODO hier die Messages aus der Config einfuegen!  Auch bei den Fehlermeldungen!                      
-                           plugin.getServer().getPlayer(playerName).sendMessage(TimedRanks.logPrefix + "Du wurdest vom " + ChatColor.RED + promoteGroup + ChatColor.GRAY + " zum " + ChatColor.GREEN + baseGroup + ChatColor.GRAY + " zurueckgestuft.");
+                           plugin.getServer().getPlayer(playerName).sendMessage(ChatColor.WHITE + TimedRanks.logPrefix + "Du wurdest vom " + ChatColor.RED + promoteGroup + ChatColor.WHITE + " zum " + ChatColor.GREEN + baseGroup + ChatColor.WHITE + " zurueckgestuft.");
                         }
                      }
                      else

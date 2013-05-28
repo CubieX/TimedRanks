@@ -1,5 +1,13 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
+V.1.5.4
+- Build against CB 1.5.2-R0.1 Beta
+- added remaining time info for /tr status command when status is paused
+- removed permissions hook check and added OP permission fallback system
+  (will NOT have full functionality w.o. superperms compatible permission system!)
+- improved status messages for due payment and expired promotions
+- minor output message improvements
+  
 V.1.5.3
 - fixed "first load" config creation error for promotedPlayers.yml
 

@@ -3,7 +3,7 @@ main: com.github.CubieX.TimedRanks.TimedRanks
 depend: [Vault]
 author: CubieX
 softdepend: [PermissionsEx, zPermissions, bPermissions, PermissionsBukkit]
-version: 1.5.3
+version: 1.5.4
 description: Automated, timed rank promotion and demotion
 
 commands:
@@ -13,19 +13,22 @@ commands:
       usage: /tr version | reload | status | promote | demote | add | sub | pause | resume | pay | list | del | help
 
 permissions:
-    
-    timedranks.manage:
-        description: Allows all player dependend actions (promoting, demoting, ect.) which do not mess up things
-        default: op
-
     timedranks.status.own:
         description: Allows listing own promotion status
         default: op
-
     timedranks.status.other:
         description: Allows listing other players promotion status
         default: op
-
+    timedranks.manage:
+        description: Allows all player dependend actions (promoting, demoting, ect.) which do not mess up things
+        default: op
+        children:
+          timedranks.status.own: true
+          timedranks.status.other: true
     timedranks.admin:
         description: Allows reloading the plugin and all other commands.
         default: op
+        children:
+          timedranks.status.own: true
+          timedranks.status.other: true
+          timedranks.manage: true

@@ -27,12 +27,12 @@ public class TimedRanks extends JavaPlugin
    static final String logPrefix = "[TimedRanks] "; // Prefix to go in front of all log entries
    static Economy econ = null;
    static Permission perm = null;
-   public static Boolean debug = false;
-   public static String currency = "$";
-   public static final double MIN_AMOUNT = 0.01;
-   public static final double MAX_AMOUNT = 1000000;
-   public static final int MIN_INTERVAL = 1;
-   public static final int MAX_INTERVAL = 365;
+   static Boolean debug = false;
+   static String currency = "$";
+   static final double MIN_AMOUNT = 0.01;
+   static final double MAX_AMOUNT = 1000000;
+   static final int MIN_INTERVAL = 1;
+   static final int MAX_INTERVAL = 365;
 
    private List<String> baseGroupList = null;
    private List<String> promoteGroupList = null;
@@ -57,14 +57,7 @@ public class TimedRanks extends JavaPlugin
          log.severe(logPrefix + "will be disabled now. Config file(s) are outdated or corrupted.");
          disablePlugin();
          return;
-      }
-
-      if (!hookToPermissionSystem())
-      {
-         log.info(logPrefix + "- Disabled due to no superperms compatible permission system found!");
-         disablePlugin();
-         return;
-      }
+      }     
 
       if (!setupPermissions())
       {
@@ -91,9 +84,7 @@ public class TimedRanks extends JavaPlugin
    }
 
    private boolean checkConfigFileVersion()
-   { // TODO this fails if promotedPlayers config file was not present and had to be created. For some odd reason...
-      // the config_file: key can not be read from promotedPlayers.yml on first load.
-      // second load will be successful.
+   {
       boolean configOK = false;
       boolean resMainConfig = false;
       boolean resPromotedPlayersConfig = false;
@@ -125,22 +116,7 @@ public class TimedRanks extends JavaPlugin
       }
 
       return (configOK);
-   }
-
-   private boolean hookToPermissionSystem()
-   {
-      if ((getServer().getPluginManager().getPlugin("PermissionsEx") == null) &&
-            (getServer().getPluginManager().getPlugin("bPermissions") == null) &&
-            (getServer().getPluginManager().getPlugin("zPermissions") == null) &&
-            (getServer().getPluginManager().getPlugin("PermissionsBukkit") == null))
-      {
-         return false;
-      }
-      else
-      {
-         return true;
-      }
-   }
+   }   
 
    private boolean setupEconomy() 
    {
@@ -402,7 +378,7 @@ public class TimedRanks extends JavaPlugin
       {         
          long currTime = getCurrentTimeInMillis();
          
-         long promotionEndTime = 0;         
+         long promotionEndTime = 0;
          
          if(promotionIsActive(playerName))
          {
@@ -415,7 +391,14 @@ public class TimedRanks extends JavaPlugin
             promotionEndTime = cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".endTime") + pausedDuration;           
          }
 
-         timeLeft = "< " + String.valueOf(((promotionEndTime - currTime) / 1000L / 3600L / 24L) + 1);            
+         if((promotionEndTime - currTime) < -1) // promotion has already expired while player was offline
+         {
+            timeLeft =  "beim naechsten Login.";
+         }
+         else
+         {
+            timeLeft = "in < " + ChatColor.GREEN + String.valueOf(((promotionEndTime - currTime) / 1000L / 3600L / 24L) + 1) + ChatColor.WHITE + " Tagen.";
+         }
       }
 
       return (timeLeft);
@@ -603,7 +586,15 @@ public class TimedRanks extends JavaPlugin
          if(cHandler.getPromotedPlayersFile().contains("players." + playerName + ".nextPayment")) 
          {
             nextPaymentTime = cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".nextPayment");
-            timeLeft = "< " + String.valueOf(((nextPaymentTime - currTime) / 1000L / 3600L / 24L) + 1);
+            
+            if((nextPaymentTime - currTime) < -1) // payment is already due, but player was offline until now
+            {
+               timeLeft =  "beim naechsten Login.";
+            }
+            else
+            {
+               timeLeft = "in < " + ChatColor.GREEN + String.valueOf(((nextPaymentTime - currTime) / 1000L / 3600L / 24L) + 1) + ChatColor.WHITE + " Tagen.";
+            }            
          }
          else
          { // player is in payed group, but this was not done via TR. So ignore Payment.

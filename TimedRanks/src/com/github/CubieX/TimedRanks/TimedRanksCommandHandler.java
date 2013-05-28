@@ -27,7 +27,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
    {
       if (cmd.getName().equalsIgnoreCase("tr"))
-      { // If the player typed /tr then do the following... (can be run from console also)
+      {
          if (args.length == 0)
          { //no arguments, so help will be displayed
             return false;
@@ -45,7 +45,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             // RELOAD CONFIG
             if (args[0].equalsIgnoreCase("reload")) // reload the plugins config and playerfile
             {            
-               if(sender.hasPermission("timedranks.admin"))
+               if(sender.isOp() || sender.hasPermission("timedranks.admin"))
                {
                   cHandler.reloadConfig(sender);                        
                }
@@ -59,7 +59,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             // SHOW OWN PROMOTION STATUS
             if ((args[0].equalsIgnoreCase("status")) || (args[0].equalsIgnoreCase("info"))) // no name given, so show status of player that issued the command
             {
-               if(sender.hasPermission("timedranks.status.own"))
+               if(sender.isOp() || sender.hasPermission("timedranks.status.own"))
                {
                   if(sender instanceof Player)
                   {
@@ -68,12 +68,18 @@ public class TimedRanksCommandHandler implements CommandExecutor
                         String promoteGroup = plugin.getPromoteGroup(sender.getName());
 
                         if(plugin.promotionIsActive(sender.getName()))
-                        {                           
-                           sender.sendMessage(ChatColor.WHITE + "Deine Ernennung zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet in " + ChatColor.GREEN + plugin.getPromotionEndTime(sender.getName()) + ChatColor.WHITE + " Tagen.");
+                        {
+                           sender.sendMessage(ChatColor.WHITE + "Deine Ernennung zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet " + plugin.getPromotionEndTime(sender.getName()));
                         }
                         else
                         {
-                           sender.sendMessage(ChatColor.WHITE + "Deine Ernennung zum " + ChatColor.GREEN + promoteGroup + " ist zur Zeit pausiert.");
+                           sender.sendMessage(ChatColor.WHITE + "Deine Ernennung zum " + ChatColor.GREEN + promoteGroup + " ist zur Zeit pausiert.\n" +
+                                 ChatColor.WHITE + "Nach Fortsetzung endet die Ernennung " + plugin.getPromotionEndTime(sender.getName()));
+
+                           if(plugin.playerIsInPayedGroup(sender.getName()))
+                           {
+                              sender.sendMessage(ChatColor.WHITE + "Naechste Auszahlung " + ChatColor.GREEN + plugin.getNextPaymentTime(sender.getName()));
+                           }
                         }
                      }
                      else
@@ -97,7 +103,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             // SHOW A LIST OF ALL CURRENTLY PROMOTED PLAYERS
             if (args[0].equalsIgnoreCase("list") || args[0].equalsIgnoreCase("liste"))
             { 
-               if(sender.hasPermission("timedranks.status.other"))
+               if(sender.isOp() || sender.hasPermission("timedranks.status.other"))
                {
                   int countAll = 0;
                   int countActive = 0;
@@ -115,7 +121,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                   else
                   {
                      sender.sendMessage("--------------------------------------------------------");
-                     sender.sendMessage("List of promoted players");
+                     sender.sendMessage("Liste ernannter Spieler");
                      sender.sendMessage("--------------------------------------------------------");
                   }
 
@@ -137,12 +143,12 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      daysLeft = plugin.getPromotionEndTime(name);
 
                      if(sender instanceof Player)
-                     {
-                        sender.sendMessage(ChatColor.GREEN + name + ChatColor.WHITE + ": Laeuft ab in " + ChatColor.YELLOW + daysLeft + ChatColor.WHITE + " Tagen. Status: " + status);
+                     {                        
+                        sender.sendMessage(ChatColor.GREEN + name + ChatColor.WHITE + ": Laeuft ab " + daysLeft + " Status: " + status);
                      }
                      else
                      {
-                        sender.sendMessage(name + ": Expires in " + daysLeft + " days. Status: " + status);
+                        sender.sendMessage(name + ": Laeuft ab " + daysLeft + " Status: " + status);
                      }
                   }
 
@@ -155,7 +161,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                   else
                   {
                      sender.sendMessage("--------------------------------------------------------");
-                     sender.sendMessage("Promoted total: " + countAll + " | Active: " + countActive + " | Paused: " + countPaused);
+                     sender.sendMessage("Ernannt Gesamt: " + countAll + " | Aktiv: " + countActive + " | Pausiert: " + countPaused);
                      sender.sendMessage("--------------------------------------------------------");
                   }
                }
@@ -172,18 +178,18 @@ public class TimedRanksCommandHandler implements CommandExecutor
             {
                String[] messages = {
                      ChatColor.GREEN + "------------------------\n" + 
-                     "TimedRanks - Hilfe\n" + 
-                     "------------------------\n" + 
-                     "/vip version - Version anzeigen.\n" + 
-                     ChatColor.RED + "/vip reload - Configs neu laden\n" + 
-                     ChatColor.GREEN + "/vip status|info" + ChatColor.RED + " [SPIELER]" + ChatColor.GREEN + " - Ernennungsstatus anzeigen.\n" + 
-                     ChatColor.RED + "/vip list|liste - Liste - Liste aller VIPs.\n" + 
-                     "/vip promote SPIELER TAGE - Spieler zum VIP machen\n" + 
-                     "/vip demote SPIELER - Spieler in alte Gruppe zurueckstufen\n" + 
-                     "/vip add|gib SPIELER TAGE - Tage im VIP-Rank hinzufuegen\n" + 
-                     ChatColor.YELLOW + "/vip hilfe 2" + ChatColor.GRAY + " fuer 2. Seite."
+                           "TimedRanks - Hilfe\n" + 
+                           "------------------------\n" + 
+                           "/vip version - Version anzeigen.\n" + 
+                           ChatColor.RED + "/vip reload - Configs neu laden\n" + 
+                           ChatColor.GREEN + "/vip status|info" + ChatColor.RED + " [SPIELER]" + ChatColor.GREEN + " - Ernennungsstatus anzeigen.\n" + 
+                           ChatColor.RED + "/vip list|liste - Liste - Liste aller VIPs.\n" + 
+                           "/vip promote SPIELER TAGE - Spieler zum VIP machen\n" + 
+                           "/vip demote SPIELER - Spieler in alte Gruppe zurueckstufen\n" + 
+                           "/vip add|gib SPIELER TAGE - Tage im VIP-Rank hinzufuegen\n" + 
+                           ChatColor.YELLOW + "/vip hilfe 2" + ChatColor.GRAY + " fuer 2. Seite."
                };
-               
+
                sender.sendMessage(messages);
 
                return true;
@@ -200,15 +206,15 @@ public class TimedRanksCommandHandler implements CommandExecutor
                {
                   String[] messages = {
                         ChatColor.GREEN + "-------------------------------\n" + 
-                        "TimedRanks - Hilfe - Seite 2\n" + 
-                        "-------------------------------\n" + 
-                        ChatColor.RED + "/vip sub|nimm SPIELER TAGE - Tage im VIP-Rang abziehen\n" + 
-                        "/vip pause SPIELER - VIP-Ernennung pausieren\n" + 
-                        "/vip resume|weiter SPIELER - VIP-Ernennung weiterlaufen lassen\n" + 
-                        "/vip pay|zahle SPIELER - Spieler sofort auszahlen\n" + 
-                        "/vip del|delete|loesche SPIELER - Spieler aus Liste loeschen"
+                              "TimedRanks - Hilfe - Seite 2\n" + 
+                              "-------------------------------\n" + 
+                              ChatColor.RED + "/vip sub|nimm SPIELER TAGE - Tage im VIP-Rang abziehen\n" + 
+                              "/vip pause SPIELER - VIP-Ernennung pausieren\n" + 
+                              "/vip resume|weiter SPIELER - VIP-Ernennung weiterlaufen lassen\n" + 
+                              "/vip pay|zahle SPIELER - Spieler sofort auszahlen\n" + 
+                              "/vip del|delete|loesche SPIELER - Spieler aus Liste loeschen"
                   };
-                  
+
                   sender.sendMessage(messages);
 
                   return true;
@@ -218,7 +224,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             // SHOW OTHER PLAYERS PROMOTION STATUS
             if ((args[0].equalsIgnoreCase("status")) || (args[0].equalsIgnoreCase("info"))) // show the status of the given player
             {
-               if(sender.hasPermission("timedranks.status.other"))
+               if(sender.isOp() || sender.hasPermission("timedranks.status.other"))
                {
                   OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(args[1]); // Caution. This always returns a valid object!
                   String playerNameToShowStatus = null;
@@ -239,20 +245,20 @@ public class TimedRanksCommandHandler implements CommandExecutor
                         {
                            if(sender instanceof Player)
                            {                           
-                              sender.sendMessage(ChatColor.WHITE + "Die Ernennung von " + playerNameToShowStatus + " zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet in " + ChatColor.GREEN + plugin.getPromotionEndTime(playerNameToShowStatus) + ChatColor.WHITE + " Tagen.");
+                              sender.sendMessage(ChatColor.WHITE + "Die Ernennung von " + playerNameToShowStatus + " zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet " + plugin.getPromotionEndTime(playerNameToShowStatus));
 
                               if(plugin.playerIsInPayedGroup(playerNameToShowStatus))
                               {
-                                 sender.sendMessage(ChatColor.WHITE + "Naechste Auszahlung in " + ChatColor.GREEN + plugin.getNextPaymentTime(playerNameToShowStatus) + ChatColor.WHITE + " Tagen.");
+                                 sender.sendMessage(ChatColor.WHITE + "Naechste Auszahlung " + plugin.getNextPaymentTime(playerNameToShowStatus));
                               }
                            }
                            else
                            {
-                              sender.sendMessage("Promotion of " + playerNameToShowStatus + " as " + promoteGroup + " ends in " + plugin.getPromotionEndTime(playerNameToShowStatus) + " days.");
+                              sender.sendMessage("Ernennung von " + playerNameToShowStatus + " als " + promoteGroup + " endet " + plugin.getPromotionEndTime(playerNameToShowStatus));
 
                               if(plugin.playerIsInPayedGroup(playerNameToShowStatus))
                               {
-                                 sender.sendMessage("Next payment in " + plugin.getNextPaymentTime(playerNameToShowStatus) + " days.");
+                                 sender.sendMessage("Naechste Auszahlung " + plugin.getNextPaymentTime(playerNameToShowStatus));
                               }
                            }
                         }
@@ -260,11 +266,13 @@ public class TimedRanksCommandHandler implements CommandExecutor
                         {
                            if(sender instanceof Player)
                            {
-                              sender.sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Die Ernennung dieses Spielers zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " ist zur Zeit pausiert.");
+                              sender.sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Die Ernennung dieses Spielers zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " ist zur Zeit pausiert.\n" +
+                                    ChatColor.WHITE + "Nach Fortsetzung endet die Ernennung " + plugin.getPromotionEndTime(playerNameToShowStatus));
                            }
                            else
                            {
-                              sender.sendMessage(TimedRanks.logPrefix + "This players promotion to rank " + promoteGroup + " is currently paused.");
+                              sender.sendMessage(TimedRanks.logPrefix + "Die Ernennung dieses Spielers zum " + promoteGroup + " ist zur Zeit pausiert.");
+                              sender.sendMessage(TimedRanks.logPrefix + "Nach Fortsetzung endet die Ernennung " + plugin.getPromotionEndTime(playerNameToShowStatus));                             
                            }
                         }
                      }
@@ -302,7 +310,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             // PAUSE PROMOTION OF A PLAYER
             if (args[0].equalsIgnoreCase("pause")) // pause the promoted rank immediately until it gets manually resumed
             {            
-               if(sender.hasPermission("timedranks.manage"))
+               if(sender.isOp() || sender.hasPermission("timedranks.manage"))
                {
                   OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(args[1]); // Caution. This always returns a valid object!
                   String playersNameToPause = null;
@@ -379,7 +387,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             // RESUME PROMOTION OF A PLAYER
             if (args[0].equalsIgnoreCase("resume") || args[0].equalsIgnoreCase("weiter")) // resume the promoted rank, adding the suspended time to the end timestamp and next payment time
             {            
-               if(sender.hasPermission("timedranks.manage"))
+               if(sender.isOp() || sender.hasPermission("timedranks.manage"))
                {
                   OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(args[1]); // Caution. This always returns a valid object!
                   String playersNameToResume = null;
@@ -457,7 +465,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             // DEMOTE A PROMOTED PLAYER
             if (args[0].equalsIgnoreCase("demote"))
             {                 
-               if(sender.hasPermission("timedranks.manage"))
+               if(sender.isOp() || sender.hasPermission("timedranks.manage"))
                {
                   OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(args[1]); // Caution. This always returns a valid object!
                   String playersNameToDemote = null;
@@ -567,7 +575,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             // PAY PLAYER BEFORE DUE DATE (this will postpone the next payment accordingly by one payment interval!)
             if ((args[0].equalsIgnoreCase("pay")) || (args[0].equalsIgnoreCase("zahle")))
             {                 
-               if(sender.hasPermission("timedranks.admin"))
+               if(sender.isOp() || sender.hasPermission("timedranks.admin"))
                {
                   OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(args[1]); // Caution. This always returns a valid object!
                   String playersNameToPay = null;
@@ -667,7 +675,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             // This is only necessary if the players rank was modified without using TR
             if ((args[0].equalsIgnoreCase("del")) || (args[0].equalsIgnoreCase("delete")) || args[0].equalsIgnoreCase("loeschen"))
             {                 
-               if(sender.hasPermission("timedranks.admin"))
+               if(sender.isOp() || sender.hasPermission("timedranks.admin"))
                {
                   OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(args[1]); // Caution. This always returns a valid object!
                   String playersNameToDelete = null;
@@ -717,7 +725,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             // PROMOTE A PLAYER FOR A GIVEN TIME
             if (args[0].equalsIgnoreCase("promote"))
             {
-               if(sender.hasPermission("timedranks.manage"))
+               if(sender.isOp() || sender.hasPermission("timedranks.manage"))
                {
                   int daysToPromote = 0;
 
@@ -852,7 +860,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             // ADD TIME TO A PLAYERS CURRENTLY ACTIVE PROMOTION
             if (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("gib"))
             {            
-               if(sender.hasPermission("timedranks.manage"))
+               if(sender.isOp() || sender.hasPermission("timedranks.manage"))
                {
                   OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(args[1]); // Caution. This always returns a valid object!
                   String playersNameToAddTime = null;
@@ -946,7 +954,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
             // SUBTRACT TIME FROM A PLAYERS CURRENTLY ACTIVE PROMOTION
             if (args[0].equalsIgnoreCase("sub") || args[0].equalsIgnoreCase("nimm"))
             {                   
-               if(sender.hasPermission("timedranks.manage"))
+               if(sender.isOp() || sender.hasPermission("timedranks.manage"))
                {
                   OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(args[1]); // Caution. This always returns a valid object!
                   String playersNameToSubtractTime = null;
