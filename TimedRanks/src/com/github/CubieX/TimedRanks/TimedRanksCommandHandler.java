@@ -1,5 +1,6 @@
 package com.github.CubieX.TimedRanks;
 
+import java.util.ArrayList;
 import java.util.Set;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.ChatColor;
@@ -15,6 +16,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
    private final TimedRanks plugin;
    private final TimedRanksConfigHandler cHandler;
    private final Permission perm;
+   private final int contentLinesPerPage = 9;
 
    public TimedRanksCommandHandler(TimedRanks plugin, TimedRanksConfigHandler cHandler, Permission perm)
    {
@@ -35,14 +37,14 @@ public class TimedRanksCommandHandler implements CommandExecutor
 
          if (args.length == 1)
          {
-            // SHOW PLUGIN VERSION
+            // SHOW PLUGIN VERSION =======================================================================
             if (args[0].equalsIgnoreCase("version")) // show the current version of the plugin
             {            
                sender.sendMessage(ChatColor.GREEN + "This server is running " + plugin.getDescription().getName() + " " + plugin.getDescription().getVersion());
                return true;
             }    
 
-            // RELOAD CONFIG
+            // RELOAD CONFIG =======================================================================
             if (args[0].equalsIgnoreCase("reload")) // reload the plugins config and playerfile
             {            
                if(sender.isOp() || sender.hasPermission("timedranks.admin"))
@@ -56,7 +58,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                return true;
             }
 
-            // SHOW OWN PROMOTION STATUS
+            // SHOW OWN PROMOTION STATUS =======================================================================
             if ((args[0].equalsIgnoreCase("status")) || (args[0].equalsIgnoreCase("info"))) // no name given, so show status of player that issued the command
             {
                if(sender.isOp() || sender.hasPermission("timedranks.status.own"))
@@ -100,7 +102,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                return true;
             }
 
-            // SHOW A LIST OF ALL CURRENTLY PROMOTED PLAYERS
+            // SHOW A LIST OF ALL CURRENTLY PROMOTED PLAYERS - Page 1 (further pages are in "2 Parameters" section!) ===================
             if (args[0].equalsIgnoreCase("list") || args[0].equalsIgnoreCase("liste"))
             { 
                if(sender.isOp() || sender.hasPermission("timedranks.status.other"))
@@ -111,19 +113,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                   String status = "READ ERROR";
                   String daysLeft = "READ_ERROR";                     
                   Set<String> promotedPlayersList = cHandler.getPromotedPlayersFile().getConfigurationSection("players").getKeys(false);
-
-                  if(sender instanceof Player)
-                  {
-                     sender.sendMessage(ChatColor.WHITE + "----------------------------------------------");
-                     sender.sendMessage(ChatColor.GREEN + "Liste ernannter Spieler");
-                     sender.sendMessage(ChatColor.WHITE + "----------------------------------------------");
-                  }
-                  else
-                  {
-                     sender.sendMessage("--------------------------------------------------------");
-                     sender.sendMessage("Liste ernannter Spieler");
-                     sender.sendMessage("--------------------------------------------------------");
-                  }
+                  ArrayList <String> lineList = new ArrayList<String>();
 
                   for (String name : promotedPlayersList)
                   {  
@@ -144,26 +134,16 @@ public class TimedRanksCommandHandler implements CommandExecutor
 
                      if(sender instanceof Player)
                      {                        
-                        sender.sendMessage(ChatColor.GREEN + name + ChatColor.WHITE + ": Laeuft ab " + daysLeft + " Status: " + status);
+                        lineList.add(ChatColor.GREEN + name + ChatColor.WHITE + ": Laeuft ab " + daysLeft + " Status: " + status);
                      }
                      else
                      {
-                        sender.sendMessage(name + ": Laeuft ab " + daysLeft + " Status: " + status);
+                        lineList.add(name + ": Laeuft ab " + daysLeft + " Status: " + status);
                      }
                   }
 
-                  if(sender instanceof Player)
-                  {
-                     sender.sendMessage(ChatColor.WHITE + "----------------------------------------------");
-                     sender.sendMessage(ChatColor.WHITE + "Ernannt Gesamt: " + ChatColor.YELLOW + countAll + ChatColor.WHITE + " | Aktiv: " + ChatColor.GREEN + countActive + ChatColor.WHITE + " | Pausiert: " + ChatColor.RED + countPaused);
-                     sender.sendMessage(ChatColor.WHITE + "----------------------------------------------");
-                  }
-                  else
-                  {
-                     sender.sendMessage("--------------------------------------------------------");
-                     sender.sendMessage("Ernannt Gesamt: " + countAll + " | Aktiv: " + countActive + " | Pausiert: " + countPaused);
-                     sender.sendMessage("--------------------------------------------------------");
-                  }
+                  // send list paginated
+                  paginateList(sender, lineList, 1, countAll, countActive, countPaused);
                }
                else
                {
@@ -173,7 +153,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                return true;
             }
 
-            // DISPLAY HELP Page 1 (Page 2 is in "2 Parameters" section!)
+            // DISPLAY HELP Page 1 (Page 2 is in "2 Parameters" section!) =======================================================================
             if ((args[0].equalsIgnoreCase("help")) || (args[0].equalsIgnoreCase("hilfe")))
             {
                String[] messages = {
@@ -198,7 +178,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
 
          if (args.length == 2)
          {
-            // DISPLAY HELP Page 2 (Page 1 is in "1 Parameters" section!)
+            // DISPLAY HELP Page 2 (Page 1 is in "1 Parameters" section!) =======================================================================
             if ((args[0].equalsIgnoreCase("help")) || (args[0].equalsIgnoreCase("hilfe")))
             {
                if((null != args[1]) &&
@@ -221,7 +201,65 @@ public class TimedRanksCommandHandler implements CommandExecutor
                }
             }
 
-            // SHOW OTHER PLAYERS PROMOTION STATUS
+            // SHOW A LIST OF ALL CURRENTLY PROMOTED PLAYERS - Page 2 to X ======================================================================= 
+            if (args[0].equalsIgnoreCase("list") || args[0].equalsIgnoreCase("liste"))
+            {
+               if(sender.isOp() || sender.hasPermission("timedranks.status.other"))
+               {
+                  if(TimedRanksUtils.isPositiveInteger(args[1]))
+                  {
+                     int countAll = 0;
+                     int countActive = 0;
+                     int countPaused = 0;
+                     String status = "READ ERROR";
+                     String daysLeft = "READ_ERROR";                     
+                     Set<String> promotedPlayersList = cHandler.getPromotedPlayersFile().getConfigurationSection("players").getKeys(false);
+                     ArrayList <String> lineList = new ArrayList<String>();
+
+                     for (String name : promotedPlayersList)
+                     {  
+                        if(plugin.promotionIsActive(name))
+                        {
+                           status = ChatColor.GREEN + "active";
+                           countActive++;
+                           countAll++;
+                        }
+                        else
+                        {
+                           status = ChatColor.RED + "paused";
+                           countPaused++;
+                           countAll++;
+                        }
+
+                        daysLeft = plugin.getPromotionEndTime(name);
+
+                        if(sender instanceof Player)
+                        {                        
+                           lineList.add(ChatColor.GREEN + name + ChatColor.WHITE + ": Laeuft ab " + daysLeft + " Status: " + status);
+                        }
+                        else
+                        {
+                           lineList.add(name + ": Laeuft ab " + daysLeft + " Status: " + status);
+                        }
+                     }
+
+                     // send list paginated
+                     paginateList(sender, lineList, Integer.parseInt(args[1]), countAll, countActive, countPaused);
+                  }
+                  else
+                  {
+                     sender.sendMessage(ChatColor.RED + "Der erste Parameter muss eine positive Zahl sein.");
+                  }
+               }
+               else
+               {
+                  sender.sendMessage(ChatColor.RED + "Du hast keine Berechtigung um die Liste anzuzeigen!");
+               }
+
+               return true;
+            }
+
+            // SHOW OTHER PLAYERS PROMOTION STATUS =======================================================================
             if ((args[0].equalsIgnoreCase("status")) || (args[0].equalsIgnoreCase("info"))) // show the status of the given player
             {
                if(sender.isOp() || sender.hasPermission("timedranks.status.other"))
@@ -307,7 +345,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                return true;
             }
 
-            // PAUSE PROMOTION OF A PLAYER
+            // PAUSE PROMOTION OF A PLAYER =======================================================================
             if (args[0].equalsIgnoreCase("pause")) // pause the promoted rank immediately until it gets manually resumed
             {            
                if(sender.isOp() || sender.hasPermission("timedranks.manage"))
@@ -384,7 +422,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                return true;
             }                
 
-            // RESUME PROMOTION OF A PLAYER
+            // RESUME PROMOTION OF A PLAYER =======================================================================
             if (args[0].equalsIgnoreCase("resume") || args[0].equalsIgnoreCase("weiter")) // resume the promoted rank, adding the suspended time to the end timestamp and next payment time
             {            
                if(sender.isOp() || sender.hasPermission("timedranks.manage"))
@@ -462,7 +500,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                return true;
             }
 
-            // DEMOTE A PROMOTED PLAYER
+            // DEMOTE A PROMOTED PLAYER =======================================================================
             if (args[0].equalsIgnoreCase("demote"))
             {                 
                if(sender.isOp() || sender.hasPermission("timedranks.manage"))
@@ -572,7 +610,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                return true;
             }
 
-            // PAY PLAYER BEFORE DUE DATE (this will postpone the next payment accordingly by one payment interval!)
+            // PAY PLAYER BEFORE DUE DATE (this will postpone the next payment accordingly by one payment interval!) =======================
             if ((args[0].equalsIgnoreCase("pay")) || (args[0].equalsIgnoreCase("zahle")))
             {                 
                if(sender.isOp() || sender.hasPermission("timedranks.admin"))
@@ -671,7 +709,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                return true;
             }
 
-            // DELETE A PLAYER FROM PROMOTION LIST WITHOUT ANY CHECKS OR RANK MODIFICATIONS
+            // DELETE A PLAYER FROM PROMOTION LIST WITHOUT ANY CHECKS OR RANK MODIFICATIONS ==========================================
             // This is only necessary if the players rank was modified without using TR
             if ((args[0].equalsIgnoreCase("del")) || (args[0].equalsIgnoreCase("delete")) || args[0].equalsIgnoreCase("loeschen"))
             {                 
@@ -722,7 +760,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
 
          if (args.length == 3)
          {
-            // PROMOTE A PLAYER FOR A GIVEN TIME
+            // PROMOTE A PLAYER FOR A GIVEN TIME =======================================================================
             if (args[0].equalsIgnoreCase("promote"))
             {
                if(sender.isOp() || sender.hasPermission("timedranks.manage"))
@@ -738,7 +776,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                      playersNameToPromote = offlinePlayer.getName();   
                   }
 
-                  if(TimedRanksUtils.tryParseInt(args[2]))
+                  if(TimedRanksUtils.isInteger(args[2]))
                   {
                      daysToPromote = Integer.parseInt(args[2]);
                   }
@@ -857,7 +895,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                return true;
             }
 
-            // ADD TIME TO A PLAYERS CURRENTLY ACTIVE PROMOTION
+            // ADD TIME TO A PLAYERS CURRENTLY ACTIVE PROMOTION =======================================================================
             if (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("gib"))
             {            
                if(sender.isOp() || sender.hasPermission("timedranks.manage"))
@@ -875,7 +913,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                   {
                      int daysToAdd = 0;                  
 
-                     if(TimedRanksUtils.tryParseInt(args[2]))
+                     if(TimedRanksUtils.isInteger(args[2]))
                      {
                         daysToAdd = Integer.parseInt(args[2]);
                      }
@@ -951,7 +989,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                return true;
             }
 
-            // SUBTRACT TIME FROM A PLAYERS CURRENTLY ACTIVE PROMOTION
+            // SUBTRACT TIME FROM A PLAYERS CURRENTLY ACTIVE PROMOTION =======================================================================
             if (args[0].equalsIgnoreCase("sub") || args[0].equalsIgnoreCase("nimm"))
             {                   
                if(sender.isOp() || sender.hasPermission("timedranks.manage"))
@@ -969,7 +1007,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                   {
                      int daysToSubtract = 0;
 
-                     if(TimedRanksUtils.tryParseInt(args[2]))
+                     if(TimedRanksUtils.isInteger(args[2]))
                      {
                         daysToSubtract = Integer.parseInt(args[2]);
                      }
@@ -1052,5 +1090,66 @@ public class TimedRanksCommandHandler implements CommandExecutor
       }
 
       return false; // No valid parameter count. If false is returned, the help for the command stated in the plugin.yml will be displayed to the player
-   }   
+   }
+
+   // ##################################################################################################################
+
+   /**
+    * Paginates a string list to display it in chat page-by-page
+    * 
+    * @param Pass the first parameter as the sender.
+    * @param The second parameter as the list with all entries.
+    * @param The third as the page number to display.
+    * @param The fifth as the count of all promoted players
+    * @param The sixth as the count of all active promotions
+    * @param The sixth as the count of all paused promotions
+    */
+   public void paginateList(CommandSender sender, ArrayList<String> list, int page, int countAll, int countActive, int countPaused)
+   {
+      if(sender instanceof Player)
+      {
+         sender.sendMessage(ChatColor.WHITE + "----------------------------------------------");
+         sender.sendMessage(ChatColor.GREEN + "Liste ernannter Spieler - Seite (" + String.valueOf(page) + " von " + (((list.size() % contentLinesPerPage) == 0) ? list.size() / contentLinesPerPage : (list.size() / contentLinesPerPage) + 1) + ")");
+         sender.sendMessage(ChatColor.WHITE + "----------------------------------------------");
+      }
+      else
+      {
+         sender.sendMessage("--------------------------------------------------------");
+         sender.sendMessage("Liste ernannter Spieler - Seite (" + String.valueOf(page) + " von " + (((list.size() % contentLinesPerPage) == 0) ? list.size() / contentLinesPerPage : (list.size() / contentLinesPerPage) + 1) + ")");
+         sender.sendMessage("--------------------------------------------------------");
+      }
+
+      if(list.isEmpty())
+      {
+         sender.sendMessage(ChatColor.WHITE + "Keine Eintraege.");
+      }
+      else
+      {
+         int i = 0, k = 0;
+         page--;
+
+         for (String entry : list)
+         {
+            k++;
+            if ((((page * contentLinesPerPage) + i + 1) == k) && (k != ((page * contentLinesPerPage) + contentLinesPerPage + 1)))
+            {
+               i++;
+               sender.sendMessage(entry);
+            }
+         }
+      }
+
+      if(sender instanceof Player)
+      {
+         sender.sendMessage(ChatColor.WHITE + "----------------------------------------------");
+         sender.sendMessage(ChatColor.WHITE + "Ernannt Gesamt: " + ChatColor.YELLOW + countAll + ChatColor.WHITE + " | Aktiv: " + ChatColor.GREEN + countActive + ChatColor.WHITE + " | Pausiert: " + ChatColor.RED + countPaused);
+         sender.sendMessage(ChatColor.WHITE + "----------------------------------------------");
+      }
+      else
+      {
+         sender.sendMessage("--------------------------------------------------------");
+         sender.sendMessage("Ernannt Gesamt: " + countAll + " | Aktiv: " + countActive + " | Pausiert: " + countPaused);
+         sender.sendMessage("--------------------------------------------------------");
+      }
+   }
 }

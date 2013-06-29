@@ -1,5 +1,8 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
+V1.5.5
+- added pagination for promoted players list
+
 V.1.5.4
 - Build against CB 1.5.2-R0.1 Beta
 - added remaining time info for /tr status command when status is paused
