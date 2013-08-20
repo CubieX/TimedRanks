@@ -33,6 +33,7 @@ public class TimedRanks extends JavaPlugin
    static final double MAX_AMOUNT = 1000000;
    static final int MIN_INTERVAL = 1;
    static final int MAX_INTERVAL = 365;
+   static final long WARN_DAYS = 5; // expiry warning will be sent on login if less or equal this amount of days are left for the player
 
    private List<String> baseGroupList = null;
    private List<String> promoteGroupList = null;
@@ -370,16 +371,16 @@ public class TimedRanks extends JavaPlugin
    }
 
    // returns the left days in promoted status
-   public String getPromotionEndTime(String playerName)
+   public long getPromotionEndTimeInDays(String playerName)
    {
-      String timeLeft = "READ ERROR";
+      long daysLeft = 0;
 
       if(playerIsOnPromotionList(playerName)) // is player managed via TimedRanks?
       {         
          long currTime = getCurrentTimeInMillis();
-         
+
          long promotionEndTime = 0;
-         
+
          if(promotionIsActive(playerName))
          {
             promotionEndTime = cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".endTime");
@@ -391,14 +392,26 @@ public class TimedRanks extends JavaPlugin
             promotionEndTime = cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".endTime") + pausedDuration;           
          }
 
-         if((promotionEndTime - currTime) < -1) // promotion has already expired while player was offline
-         {
-            timeLeft =  "beim naechsten Login.";
-         }
-         else
-         {
-            timeLeft = "in < " + ChatColor.GREEN + String.valueOf(((promotionEndTime - currTime) / 1000L / 3600L / 24L) + 1) + ChatColor.WHITE + " Tagen.";
-         }
+         daysLeft = ((promotionEndTime - currTime) / (1000L * 3600L * 24L)) + 1; // round up, so 0.2 days are approx. 1 day
+      }
+
+      return (daysLeft);
+   }
+
+   // returns the left days in promoted status
+   public String getPromotionEndTimeMessage(String playerName)
+   {
+      String timeLeft = "READ ERROR";
+      
+      long daysLeft = getPromotionEndTimeInDays(playerName);
+
+      if(promotionTimeIsUp(playerName)) // promotion has already expired while player was offline
+      { //  check with exact method. Because "getPromotionEndTimeInDays()" returns days rounded up by 1 and is only useful for THIS method to display the value to players 
+         timeLeft =  "beim naechsten Login.";
+      }
+      else
+      {
+         timeLeft = "in < " + ChatColor.GREEN + daysLeft + ChatColor.WHITE + " Tagen.";
       }
 
       return (timeLeft);
@@ -508,7 +521,7 @@ public class TimedRanks extends JavaPlugin
                // how long was the players promotion paused? Correct the endTime and nextPaymentTime by this value
                long pausedDuration = getCurrentTimeInMillis() - cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".pauseTime");           
                long newEndTime = cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".endTime") + pausedDuration;
-               
+
                long newNextPaymentTime = cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".nextPayment") + pausedDuration;
 
                cHandler.getPromotedPlayersFile().set("players." + playerName + ".endTime", newEndTime);
@@ -551,7 +564,7 @@ public class TimedRanks extends JavaPlugin
       if(playerIsOnPromotionList(playerName))
       {
          if(0 < days)
-         {            
+         {
             long newEndTime = cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".endTime") - (days * 24L * 3600L * 1000L);
             long currTime = getCurrentTimeInMillis();
 
@@ -564,7 +577,7 @@ public class TimedRanks extends JavaPlugin
             cHandler.getPromotedPlayersFile().set("players." + playerName + ".endTime", newEndTime);        
             cHandler.savePromotedPlayersFile();
             success = true;            
-         }         
+         }
       }
 
       return (success);
@@ -586,7 +599,7 @@ public class TimedRanks extends JavaPlugin
          if(cHandler.getPromotedPlayersFile().contains("players." + playerName + ".nextPayment")) 
          {
             nextPaymentTime = cHandler.getPromotedPlayersFile().getLong("players." + playerName + ".nextPayment");
-            
+
             if((nextPaymentTime - currTime) < -1) // payment is already due, but player was offline until now
             {
                timeLeft =  "beim naechsten Login.";

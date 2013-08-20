@@ -79,7 +79,7 @@ They are called in the following order
                // or he should be demoted or deleted from the list
                checkPlayerGroupStatus(joinedPlayer);
             }
-         }, 20*5L); // 5 second delay to give BukkitPermissions time to register joined players permissions         
+         }, 20*10L); // 10 second delay to give BukkitPermissions time to register joined players permissions         
       }
       catch (Exception ex)
       {
@@ -98,13 +98,15 @@ They are called in the following order
          {
             if(plugin.promotionIsActive(playerName))
             {
+               String promoteGroup = plugin.getPromoteGroup(playerName);
+               
                // Perform time check
                if(plugin.promotionTimeIsUp(playerName))
                {
                   // time is up. So demote player.
                   World nullWorld = null;
                   String baseGroup = plugin.getBaseGroup(playerName);
-                  String promoteGroup = plugin.getPromoteGroup(playerName);
+                  
 
                   if((null != baseGroup) &&
                         (null != promoteGroup)) // given player is valid and demotable and his groups are found
@@ -129,6 +131,14 @@ They are called in the following order
                   else
                   {
                      TimedRanks.log.severe(TimedRanks.logPrefix + ChatColor.YELLOW + "Error in cofing file! Group assignment was nor recognizable.");
+                  }
+               }
+               else
+               {
+                  // inform player about his promotion ending soon
+                  if(plugin.getPromotionEndTimeInDays(playerName) <= TimedRanks.WARN_DAYS)
+                  {
+                     plugin.getServer().getPlayer(playerName).sendMessage(ChatColor.WHITE + "Deine Ernennung zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet " + plugin.getPromotionEndTimeMessage(playerName));  
                   }
                }
             }

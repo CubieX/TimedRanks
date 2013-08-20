@@ -16,7 +16,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
    private final TimedRanks plugin;
    private final TimedRanksConfigHandler cHandler;
    private final Permission perm;
-   private final int contentLinesPerPage = 9;
+   private final int contentLinesPerPage = 10;
 
    public TimedRanksCommandHandler(TimedRanks plugin, TimedRanksConfigHandler cHandler, Permission perm)
    {
@@ -71,12 +71,12 @@ public class TimedRanksCommandHandler implements CommandExecutor
 
                         if(plugin.promotionIsActive(sender.getName()))
                         {
-                           sender.sendMessage(ChatColor.WHITE + "Deine Ernennung zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet " + plugin.getPromotionEndTime(sender.getName()));
+                           sender.sendMessage(ChatColor.WHITE + "Deine Ernennung zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet " + plugin.getPromotionEndTimeMessage(sender.getName()));
                         }
                         else
                         {
                            sender.sendMessage(ChatColor.WHITE + "Deine Ernennung zum " + ChatColor.GREEN + promoteGroup + " ist zur Zeit pausiert.\n" +
-                                 ChatColor.WHITE + "Nach Fortsetzung endet die Ernennung " + plugin.getPromotionEndTime(sender.getName()));
+                                 ChatColor.WHITE + "Nach Fortsetzung endet die Ernennung " + plugin.getPromotionEndTimeMessage(sender.getName()));
 
                            if(plugin.playerIsInPayedGroup(sender.getName()))
                            {
@@ -130,7 +130,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                         countAll++;
                      }
 
-                     daysLeft = plugin.getPromotionEndTime(name);
+                     daysLeft = plugin.getPromotionEndTimeMessage(name);
 
                      if(sender instanceof Player)
                      {                        
@@ -231,7 +231,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                            countAll++;
                         }
 
-                        daysLeft = plugin.getPromotionEndTime(name);
+                        daysLeft = plugin.getPromotionEndTimeMessage(name);
 
                         if(sender instanceof Player)
                         {                        
@@ -248,7 +248,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                   }
                   else
                   {
-                     sender.sendMessage(ChatColor.RED + "Der erste Parameter muss eine positive Zahl sein.");
+                     sender.sendMessage(ChatColor.RED + "Der zweite Parameter (Seite) muss eine positive Zahl sein.");
                   }
                }
                else
@@ -283,7 +283,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                         {
                            if(sender instanceof Player)
                            {                           
-                              sender.sendMessage(ChatColor.WHITE + "Die Ernennung von " + playerNameToShowStatus + " zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet " + plugin.getPromotionEndTime(playerNameToShowStatus));
+                              sender.sendMessage(ChatColor.WHITE + "Die Ernennung von " + playerNameToShowStatus + " zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " endet " + plugin.getPromotionEndTimeMessage(playerNameToShowStatus));
 
                               if(plugin.playerIsInPayedGroup(playerNameToShowStatus))
                               {
@@ -292,7 +292,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                            }
                            else
                            {
-                              sender.sendMessage("Ernennung von " + playerNameToShowStatus + " als " + promoteGroup + " endet " + plugin.getPromotionEndTime(playerNameToShowStatus));
+                              sender.sendMessage("Ernennung von " + playerNameToShowStatus + " als " + promoteGroup + " endet " + plugin.getPromotionEndTimeMessage(playerNameToShowStatus));
 
                               if(plugin.playerIsInPayedGroup(playerNameToShowStatus))
                               {
@@ -305,12 +305,12 @@ public class TimedRanksCommandHandler implements CommandExecutor
                            if(sender instanceof Player)
                            {
                               sender.sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Die Ernennung dieses Spielers zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " ist zur Zeit pausiert.\n" +
-                                    ChatColor.WHITE + "Nach Fortsetzung endet die Ernennung " + plugin.getPromotionEndTime(playerNameToShowStatus));
+                                    ChatColor.WHITE + "Nach Fortsetzung endet die Ernennung " + plugin.getPromotionEndTimeMessage(playerNameToShowStatus));
                            }
                            else
                            {
                               sender.sendMessage(TimedRanks.logPrefix + "Die Ernennung dieses Spielers zum " + promoteGroup + " ist zur Zeit pausiert.");
-                              sender.sendMessage(TimedRanks.logPrefix + "Nach Fortsetzung endet die Ernennung " + plugin.getPromotionEndTime(playerNameToShowStatus));                             
+                              sender.sendMessage(TimedRanks.logPrefix + "Nach Fortsetzung endet die Ernennung " + plugin.getPromotionEndTimeMessage(playerNameToShowStatus));                             
                            }
                         }
                      }
@@ -1106,16 +1106,28 @@ public class TimedRanksCommandHandler implements CommandExecutor
     */
    public void paginateList(CommandSender sender, ArrayList<String> list, int page, int countAll, int countActive, int countPaused)
    {
+
+      int totalPageCount = 1;
+
+      if((list.size() % contentLinesPerPage) == 0)
+      {
+         totalPageCount = list.size() / contentLinesPerPage;
+      }
+      else
+      {
+         totalPageCount = (list.size() / contentLinesPerPage) + 1;
+      }
+
       if(sender instanceof Player)
       {
          sender.sendMessage(ChatColor.WHITE + "----------------------------------------------");
-         sender.sendMessage(ChatColor.GREEN + "Liste ernannter Spieler - Seite (" + String.valueOf(page) + " von " + (((list.size() % contentLinesPerPage) == 0) ? list.size() / contentLinesPerPage : (list.size() / contentLinesPerPage) + 1) + ")");
+         sender.sendMessage(ChatColor.GREEN + "Liste ernannter Spieler - Seite (" + String.valueOf(page) + " von " + totalPageCount + ")");
          sender.sendMessage(ChatColor.WHITE + "----------------------------------------------");
       }
       else
       {
          sender.sendMessage("--------------------------------------------------------");
-         sender.sendMessage("Liste ernannter Spieler - Seite (" + String.valueOf(page) + " von " + (((list.size() % contentLinesPerPage) == 0) ? list.size() / contentLinesPerPage : (list.size() / contentLinesPerPage) + 1) + ")");
+         sender.sendMessage("Liste ernannter Spieler - Seite (" + String.valueOf(page) + " von " + totalPageCount + ")");
          sender.sendMessage("--------------------------------------------------------");
       }
 
