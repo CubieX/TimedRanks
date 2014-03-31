@@ -1,9 +1,21 @@
+/*
+ * TimedRanks - A CraftBukkit plugin that provides an automated promotion system for player ranks
+ * Copyright (C) 2014  CubieX
+ * 
+ * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program; if not,
+ * see <http://www.gnu.org/licenses/>.
+ */
 package com.github.CubieX.TimedRanks;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -39,11 +51,16 @@ public class TimedRanks extends JavaPlugin
    private List<String> promoteGroupList = null;
 
    //*************************************************
-   static String usedConfigVersion = "1"; // Update this every time the config file version changes, so the plugin knows, if there is a suiting config present
+   private final String usedConfigVersion = "1"; // Update this every time the config file version changes, so the plugin knows, if there is a suiting config present
    //*************************************************
-   static String usedPromotedPlayersListConfigFileVersion = "1";
+   private final String usedPromotedPlayersListConfigFileVersion = "1";
    //*************************************************
 
+   // TODO Statt Spielername die Mojang UUID holen mit player.getUniqueID() -> Geht nur wenn Server im Online-Mode und Spieler online!
+   // um fuer die Aenderung von namen die Mojang bald erlaubt vorbereitet zu sein!
+   // diese muss auch in die DB (evt. beides lokal und in der DB vorhalten)
+   // Rueckumwandlung der UUID in einen Spieler per loop ueber die online-playerliste und Vergleich der UUID. (siehe unten Hilfmethode getPlayerByUUID())
+   
    @Override
    public void onEnable()
    {
@@ -767,5 +784,40 @@ public class TimedRanks extends JavaPlugin
       }
 
       return (success);
+   }
+   
+   /**
+    * <b>Utility method to get Player by his Mojang UUID</b><br>   
+    * Use this whenever you need to retrieve a player from a saved UUID<br>
+    * CAUTION: Works only if server is in online-mode and player is online!
+    * 
+    * @param player The player to get the Mojang UUID from
+    * @return p The player if a matching UUID was found
+    * */
+   public Player getPlayerByUUID(UUID uuid)
+   {
+      Player p = null;
+
+      for(Player player : Bukkit.getServer().getOnlinePlayers())
+      {
+         if(player.getUniqueId().equals(uuid))
+         {
+            p = player;
+            break;   
+         }
+      }
+      
+      return p;
+   }
+   
+   /** Get players UUID from Bukkit (use only if player is online)
+    * Used for parameters of PHP scripts for example.
+    * 
+    * @param playerName The players name to get the UUID from
+    * @return uuid The UUID of th player
+    * */
+   public String getUUIDbyBukkit(String playerName)
+   {
+      return Bukkit.getServer().getPlayer(playerName).getUniqueId().toString().toLowerCase().replace("-", "");     
    }
 }

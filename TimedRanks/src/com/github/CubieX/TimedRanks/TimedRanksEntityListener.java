@@ -63,14 +63,15 @@ They are called in the following order
          Bukkit.getScheduler().runTaskLater(plugin, new Runnable()
          {
             public void run()
-            { // TODO Statt beim Login das ganze Zyklisch abpruefen alle paar Stunden? Damit die Liste immer aktuell ist?
-               // checks if player is currently promoted via TR and if his promotion time has expired. If yes, he will be demoted.
-               // this should always be called BEFORE calling checkPlayerPaymentStatus().
-               checkPlayerPromotionStatus(joinedPlayer.getName());
-
+            {
                // checks if the player is in a payed group and if his next payment is due. If yes, he will be payed and the
                // next payment time will be scheduled.
+               // this should always be called BEFORE calling checkPlayerPromotionStatus().
                checkPlayerPaymentStatus(joinedPlayer.getName());
+               
+               // TODO Statt beim Login das ganze Zyklisch abpruefen alle paar Stunden? Damit die Liste immer aktuell ist?
+               // checks if player is currently promoted via TR and if his promotion time has expired. If yes, he will be demoted.               
+               checkPlayerPromotionStatus(joinedPlayer.getName());               
 
                // checks if a player who is managed by TR is currently in the permission group matching his base- or promoteGroup
                // if not, he has been set to another group by using the permission system before demoting or deleting him from the promotionList.

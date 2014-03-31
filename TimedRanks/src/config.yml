@@ -5,21 +5,17 @@ language: de
 # enable debug output.
 debug: false
 # Group definitions are going here. Order is mandatory.
-# 1st basegroup is matched with 1st promotegroup.
-# 2nd basegroup is matched with 2nd promotegroup and so on.
-# Both groups MUST be equal length.
+# 1st basegroup entry is matched with 1st promotegroup entry.
+# 2nd basegroup entry is matched with 2nd promotegroup entry and so on.
+# All groups MUST be equal length.
 basegroups:
   - Member
   - Supporter
   - Moderator
-  - Designer
-  - ModDesigner
 promotegroups:
   - VIP
   - VIPSupporter
   - VIPModerator
-  - VIPDesigner
-  - VIPModDesigner
 # members of the following groups will receive regular payments.
 # interval may be between 1 and 365.
 # amount may be between 0.01 and 1000000.00
@@ -31,12 +27,6 @@ payedgroups:
     interval: 30
     amount: 1000.00
   VIPModerator:
-    interval: 30
-    amount: 1000.00
-  VIPDesigner:
-    interval: 30
-    amount: 1000.00
-  VIPModDesigner:
     interval: 30
     amount: 1000.00
 # Currency used on the server
