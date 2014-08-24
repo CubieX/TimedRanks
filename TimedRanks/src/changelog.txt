@@ -1,5 +1,9 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
+V1.5.9
+- fixed NPE when promotedPlayers list has no "players" node
+- corrected promotedPlayers default config file
+
 V.1.5.8
 - fixed order of payment- and promote-status check to prevent loosing a payment before demotion
 - added stubs for UUID check (WIP)

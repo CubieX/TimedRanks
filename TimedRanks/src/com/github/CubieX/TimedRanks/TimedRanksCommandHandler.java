@@ -9,6 +9,7 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 public class TimedRanksCommandHandler implements CommandExecutor
@@ -112,38 +113,45 @@ public class TimedRanksCommandHandler implements CommandExecutor
                   int countPaused = 0;
                   String status = "READ ERROR";
                   String daysLeft = "READ_ERROR";                     
-                  Set<String> promotedPlayersList = cHandler.getPromotedPlayersFile().getConfigurationSection("players").getKeys(false);
+
+                  ConfigurationSection confSec = cHandler.getPromotedPlayersFile().getConfigurationSection("players");
+                  Set<String> promotedPlayersList;
                   ArrayList <String> lineList = new ArrayList<String>();
 
-                  for (String name : promotedPlayersList)
-                  {  
-                     if(plugin.promotionIsActive(name))
-                     {
-                        status = ChatColor.GREEN + "active";
-                        countActive++;
-                        countAll++;
-                     }
-                     else
-                     {
-                        status = ChatColor.RED + "paused";
-                        countPaused++;
-                        countAll++;
-                     }
+                  if(null != confSec)
+                  {
+                     promotedPlayersList = confSec.getKeys(false);
 
-                     daysLeft = plugin.getPromotionEndTimeMessage(name);
-
-                     if(sender instanceof Player)
-                     {                        
-                        lineList.add(ChatColor.GREEN + name + ChatColor.WHITE + ": Laeuft ab " + daysLeft + " Status: " + status);
-                     }
-                     else
+                     for (String name : promotedPlayersList)
                      {
-                        lineList.add(name + ": Laeuft ab " + daysLeft + " Status: " + status);
+                        if(plugin.promotionIsActive(name))
+                        {
+                           status = ChatColor.GREEN + "active";
+                           countActive++;
+                           countAll++;
+                        }
+                        else
+                        {
+                           status = ChatColor.RED + "paused";
+                           countPaused++;
+                           countAll++;
+                        }
+
+                        daysLeft = plugin.getPromotionEndTimeMessage(name);
+
+                        if(sender instanceof Player)
+                        {                        
+                           lineList.add(ChatColor.GREEN + name + ChatColor.WHITE + ": Laeuft ab " + daysLeft + " Status: " + status);
+                        }
+                        else
+                        {
+                           lineList.add(name + ": Laeuft ab " + daysLeft + " Status: " + status);
+                        }
                      }
                   }
 
                   // send list paginated
-                  paginateList(sender, lineList, 1, countAll, countActive, countPaused);
+                  paginateList(sender, lineList, 1, countAll, countActive, countPaused);                  
                }
                else
                {
