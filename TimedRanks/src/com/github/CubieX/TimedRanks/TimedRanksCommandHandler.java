@@ -17,13 +17,15 @@ public class TimedRanksCommandHandler implements CommandExecutor
    private final TimedRanks plugin;
    private final TimedRanksConfigHandler cHandler;
    private final Permission perm;
+   private final TimedRanksFileLogger fileLogger;
    private final int contentLinesPerPage = 10;
 
-   public TimedRanksCommandHandler(TimedRanks plugin, TimedRanksConfigHandler cHandler, Permission perm)
+   public TimedRanksCommandHandler(TimedRanks plugin, TimedRanksConfigHandler cHandler, Permission perm, TimedRanksFileLogger fileLogger)
    {
       this.plugin = plugin;
       this.cHandler = cHandler;
       this.perm = perm;
+      this.fileLogger = fileLogger;
    }
 
    @Override
@@ -355,7 +357,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
 
             // PAUSE PROMOTION OF A PLAYER =======================================================================
             if (args[0].equalsIgnoreCase("pause")) // pause the promoted rank immediately until it gets manually resumed
-            {            
+            {
                if(sender.isOp() || sender.hasPermission("timedranks.manage"))
                {
                   OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(args[1]); // Caution. This always returns a valid object!
@@ -379,18 +381,20 @@ public class TimedRanksCommandHandler implements CommandExecutor
                            {
                               if(sender instanceof Player)
                               {
-                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Die Ernennung dieses Spielers zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " ist jetzt pausiert.");
+                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.WHITE + "Die Ernennung dieses Spielers zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " ist jetzt pausiert.");                                 
                               }
                               else
                               {
                                  sender.sendMessage(TimedRanks.logPrefix + "Promotion of this players to rank " + promoteGroup + " is now paused.");
                               }
+                              
+                              fileLogger.logPromotionStatusChange(sender.getName() + " PAUSED promotion of player '" + playersNameToPause + "'.");
                            }
                            else
                            {
                               if(sender instanceof Player)
                               {
-                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.RED + "Fehler beim pausieren der Ernennung!");
+                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.RED + "Fehler beim Pausieren der Ernennung!");
                               }
                               else
                               {
@@ -460,14 +464,16 @@ public class TimedRanksCommandHandler implements CommandExecutor
                               }
                               else
                               {
-                                 sender.sendMessage(TimedRanks.logPrefix + "Promotion of this players to rank " + promoteGroup + " has been reactivated.");
+                                 sender.sendMessage(TimedRanks.logPrefix + "Promotion of this players to rank " + promoteGroup + " has been resumed.");
                               }
+                              
+                              fileLogger.logPromotionStatusChange(sender.getName() + " RESUMED promotion of player '" + playersNameToResume + "'.");
                            }
                            else
                            {
                               if(sender instanceof Player)
                               {
-                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.RED + "Fehler beim reaktivieren der Ernennung!");
+                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.RED + "Fehler beim Reaktivieren der Ernennung!");
                               }
                               else
                               {
@@ -540,7 +546,8 @@ public class TimedRanksCommandHandler implements CommandExecutor
                            {
                               plugin.deletePlayerFromPromotionList(playersNameToDemote);
                               TimedRanks.log.info(TimedRanks.logPrefix + playersNameToDemote + " was demoted to rank: " + baseGroup + " from " + sender.getName());
-
+                              fileLogger.logPromotionStatusChange(sender.getName() + " DEMOTED player '" + playersNameToDemote + "'.");
+                              
                               if(sender instanceof Player)
                               {
                                  sender.sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + playersNameToDemote + ChatColor.WHITE + " wurde vom " + ChatColor.RED + promoteGroup + ChatColor.WHITE + " zum " + ChatColor.GREEN + baseGroup + ChatColor.WHITE + " zurueckgestuft.");                                 
@@ -563,11 +570,11 @@ public class TimedRanksCommandHandler implements CommandExecutor
                            {
                               if(sender instanceof Player)
                               {
-                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Fehler beim Ernennen dieses Spielers!");
+                                 sender.sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + "Fehler beim Zurueckstufen dieses Spielers!");
                               }
                               else
                               {
-                                 TimedRanks.log.severe(TimedRanks.logPrefix + "Error on promoting this player!");
+                                 TimedRanks.log.severe(TimedRanks.logPrefix + "Error on demoting this player!");
                               }                           
                            }
                         }
@@ -620,7 +627,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
 
             // PAY PLAYER BEFORE DUE DATE (this will postpone the next payment accordingly by one payment interval!) =======================
             if ((args[0].equalsIgnoreCase("pay")) || (args[0].equalsIgnoreCase("zahle")))
-            {                 
+            {
                if(sender.isOp() || sender.hasPermission("timedranks.admin"))
                {
                   OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(args[1]); // Caution. This always returns a valid object!
@@ -642,6 +649,8 @@ public class TimedRanksCommandHandler implements CommandExecutor
                         {
                            if(plugin.payPlayer(playersNameToPay))
                            {
+                              fileLogger.logTransaction("The last transaction was manually triggered from " + sender.getName() + " for player '" + playersNameToPay + "'"); //log to file
+                              
                               if(plugin.scheduleNextPayment(playersNameToPay, plugin.getPromoteGroup(playersNameToPay)))
                               {
                                  // everything went OK. Error handling is inside the called methods.
@@ -651,7 +660,7 @@ public class TimedRanksCommandHandler implements CommandExecutor
                                  }
                                  else
                                  {
-                                    TimedRanks.log.info(TimedRanks.logPrefix + "Player has been payed. Next pay time has been postponed acordingly.");
+                                    TimedRanks.log.info(TimedRanks.logPrefix + "Player has been payed. Next pay time has been postponed accordingly.");                                    
                                  }
 
                                  try
@@ -734,16 +743,15 @@ public class TimedRanksCommandHandler implements CommandExecutor
 
                   if(null != playersNameToDelete)
                   {
-                     plugin.deletePlayerFromPromotionList(playersNameToDelete);
+                     plugin.deletePlayerFromPromotionList(playersNameToDelete);                     
+                     TimedRanks.log.info(TimedRanks.logPrefix + playersNameToDelete + " has been deleted from the promotion list!");                   
 
                      if(sender instanceof Player)
                      {
                         sender.sendMessage(TimedRanks.logPrefix + ChatColor.RED + playersNameToDelete + ChatColor.WHITE + " wurde von der Ernennungsliste geloescht!");
-                     }
-                     else
-                     {
-                        TimedRanks.log.info(TimedRanks.logPrefix + playersNameToDelete + " has been deleted from the promotion list!");
-                     }
+                     }                    
+                     
+                     fileLogger.logPromotionStatusChange(sender.getName() + " DELETED player '" + playersNameToDelete + "' from promotion list.");
                   }
                   else
                   {
@@ -817,6 +825,8 @@ public class TimedRanksCommandHandler implements CommandExecutor
                                  {
                                     sender.sendMessage(TimedRanks.logPrefix + ChatColor.YELLOW + playersNameToPromote + ChatColor.WHITE + " wurde fuer " + ChatColor.GREEN + daysToPromote + ChatColor.WHITE + " Tage zum " + ChatColor.GREEN + promoteGroup + ChatColor.WHITE + " ernannt.");                                    
                                  }
+                                 
+                                 fileLogger.logPromotionStatusChange(sender.getName() + " PROMOTED player '" + playersNameToPromote + "' for " + daysToPromote + " days.");
 
                                  try
                                  {
@@ -940,6 +950,8 @@ public class TimedRanksCommandHandler implements CommandExecutor
                               {
                                  TimedRanks.log.info(TimedRanks.logPrefix + daysToAdd + " days have been added to " + playersNameToAddTime + "'s promotion.");
                               }
+                              
+                              fileLogger.logPromotionStatusChange(sender.getName() + " ADDED " + daysToAdd + " days to promotion of player '" + playersNameToAddTime + "'.");
                            }
                            else
                            {
@@ -1034,6 +1046,8 @@ public class TimedRanksCommandHandler implements CommandExecutor
                               {
                                  TimedRanks.log.info(TimedRanks.logPrefix + daysToSubtract + " days have been subtracted from " + playersNameToSubtractTime + "'s promotion.");
                               }
+                              
+                              fileLogger.logPromotionStatusChange(sender.getName() + " SUBTRACTED " + daysToSubtract + " days from promotion of player '" + playersNameToSubtractTime + "'.");
                            }
                            else
                            {

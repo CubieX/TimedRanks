@@ -1,6 +1,12 @@
 Changelog for TimedRanks by CubieX
 ----------------------------------
-V1.5.9
+V.1.5.10
+- added logging for promotion status changes of players in separate log file
+- corrected some messages
+- fixed file writer handling
+- build aainst CB 1.7.2-R0.2
+
+V.1.5.9
 - fixed NPE when promotedPlayers list has no "players" node
 - corrected promotedPlayers default config file
 

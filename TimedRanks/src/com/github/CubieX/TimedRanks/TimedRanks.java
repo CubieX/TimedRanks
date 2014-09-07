@@ -11,16 +11,13 @@
  */
 package com.github.CubieX.TimedRanks;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import net.milkbowl.vault.permission.Permission;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -93,10 +90,10 @@ public class TimedRanks extends JavaPlugin
 
       log.info(getDescription().getName() + " version " + getDescription().getVersion() + " is enabled!");
 
-      comHandler = new TimedRanksCommandHandler(this, cHandler, perm);
-      getCommand("tr").setExecutor(comHandler);
-      new TimedRanksEntityListener(this, perm);
       fileLogger = new TimedRanksFileLogger(this);
+      comHandler = new TimedRanksCommandHandler(this, cHandler, perm, fileLogger);
+      getCommand("tr").setExecutor(comHandler);
+      new TimedRanksEntityListener(this, perm);      
 
       readConfigValues();
    }
@@ -737,17 +734,9 @@ public class TimedRanks extends JavaPlugin
             {
                success = true;
 
-               log.info(logPrefix + playerName + " successfully received his regular promotional payment of " + amount + " " + currency + ".");
-
-               // Create a log entry for this successful payment ==================
-               // create current date                  
-               long currTime = getCurrentTimeInMillis();
-               final SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-               String logTime = sdf.format(new Date(currTime));
-               //log to file
-               fileLogger.logTransaction("[" + logTime + "] " + playerName + " >> " + amount + " " + TimedRanks.currency);
-               // =================================================================
-
+               log.info(logPrefix + playerName + " successfully received his regular promotional payment of " + amount + " " + currency + ".");               
+               fileLogger.logTransaction(playerName + " >> " + amount + " " + TimedRanks.currency); //log to file
+              
                if(this.getServer().getOfflinePlayer(playerName).isOnline())
                {
                   Player player = (Player)this.getServer().getOfflinePlayer(playerName);
